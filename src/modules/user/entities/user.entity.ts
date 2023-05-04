@@ -12,15 +12,15 @@ import {
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn({
-    type: 'bigint',
+    type: 'int',
     unsigned: true, // 해당 컬럼이 양수 값만 허용하도록  할지 여부
   })
   id!: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   email!: string;
 
-  @Column({ type: 'varchar', length: 64 })
+  @Column({ type: 'varchar', length: 255 })
   password!: string;
 
   @Column({ type: 'varchar', length: 32 })
@@ -28,6 +28,9 @@ export class User extends BaseEntity {
 
   @Column()
   method!: AuthMethodType;
+
+  @Column({ type: 'boolean', default: false, nullable: false })
+  isVerified!: boolean;
 
   @Column({ type: 'boolean', default: false, nullable: false })
   isInactive!: boolean;
@@ -38,8 +41,8 @@ export class User extends BaseEntity {
   @CreateDateColumn({ type: 'datetime', nullable: false })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'datetime', nullable: true })
-  updatedAt: Date | null = null;
+  @UpdateDateColumn({ type: 'datetime', nullable: false })
+  updatedAt!: Date;
 
   @DeleteDateColumn({ type: 'datetime', nullable: true })
   deletedAt: Date | null = null;
