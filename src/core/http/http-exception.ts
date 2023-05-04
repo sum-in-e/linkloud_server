@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ResponseCode } from 'src/core/http/http-code.enum';
+import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 
 interface HttpErrorOption {
   status?: number;
