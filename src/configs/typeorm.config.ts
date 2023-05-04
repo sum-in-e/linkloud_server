@@ -12,7 +12,7 @@ export class typeORMConfig implements TypeOrmOptionsFactory {
     const mode = this.configService.get('MODE', 'develop');
     const dbHost = this.configService.getOrThrow('DB_HOST');
     const dbPort = +this.configService.get('DB_PORT', 3306); // int 변환을 위해 + 적용
-    const dbUsername = this.configService.get('DB_USERNAME', 'sumin');
+    const dbUsername = this.configService.get('DB_USERNAME');
     const dbPassword = this.configService.getOrThrow('DB_PASSWORD');
     const dbName = this.configService.get('DB_NAME', 'linkloud');
     const dbSync = mode === 'develop' ? 'true' : 'false';
