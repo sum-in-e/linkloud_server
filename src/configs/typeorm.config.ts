@@ -25,7 +25,7 @@ export class typeORMConfig implements TypeOrmOptionsFactory {
       username: dbUsername,
       password: dbPassword,
       database: dbName,
-      timezone: 'Z', //  TypeORM이 UTC 시간을 사용하도록 강제
+      timezone: '+09:00', //  TypeORM이 KST(UTC+9:00) 시간을 사용하도록 강제
       poolSize: 20, // TypeORM이 사용할 데이터베이스 연결 수의 제한을 설정. 20이면 TypeORM은 동시에 20개의 데이터베이스 연결을 유지함
       entities: [join(__dirname, '../modules/**/entities/*.entity.{ts,js}')], // 엔티티 파일의 위치이며, 엔티티를 이용해서 데이터베이스 테이블을 생성한다.
       synchronize: JSON.parse(dbSync), // true면 entity class 변경될때마다 테이블 자동 변경됨. 테이블이 DB에 없는 상태여도 entity를 import하면 테이블이 자동으로 생긴다. entity가 수정되어 DB에 반영되어도 할당된 값들이 날아가지는 않지만 production에서는 false로 해야 데이터 손실을 막을 수 있다.
