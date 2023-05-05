@@ -11,12 +11,12 @@ export class EmailVerificationRepository {
     private emailVerificationRepository: Repository<EmailVerification>,
   ) {}
 
-  async saveEmailVerification(email: string, verification_code: string): Promise<void> {
+  async saveEmailVerification(email: string, verification_code: string): Promise<EmailVerification> {
     const emailVerification = new EmailVerification();
     emailVerification.email = email;
     emailVerification.verification_code = verification_code;
 
-    await this.emailVerificationRepository.save(emailVerification);
+    return await this.emailVerificationRepository.save(emailVerification);
   }
 
   // 이메일로 인증 정보를 찾는 메서드

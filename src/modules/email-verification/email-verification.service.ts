@@ -36,8 +36,13 @@ export class EmailVerificationService {
     }
 
     try {
-      await this.emailVerificationRepository.saveEmailVerification(email, verification_code);
+      const savedEmailVerificationData = await this.emailVerificationRepository.saveEmailVerification(
+        email,
+        verification_code,
+      );
       await this.sendEmail(email, verification_code, apiKey);
+
+      return { expiredAt: savedEmailVerificationData.expired_at };
     } catch (error) {
       throw new CustomHttpException(ResponseCode.FAILED_TO_SEND_EMAIL, 'Failed to send email verification code');
     }

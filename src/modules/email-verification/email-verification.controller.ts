@@ -11,6 +11,6 @@ export class EmailVerificationController {
   @Post('verify')
   @UsePipes(EmailVerificationPipe)
   async sendVerificationCode(@Query() emailVerificationDto: EmailVerificationDto) {
-    await this.emailService.sendVerificationCode(emailVerificationDto.email);
+    return await this.emailService.sendVerificationCode(emailVerificationDto.email);
   }
 }
