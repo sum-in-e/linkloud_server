@@ -15,21 +15,12 @@ export class EmailVerificationPipe implements PipeTransform {
     const object = plainToClass(metatype, value);
     const errors = await validate(object);
 
-    if (errors[0]) {
-      // 에러가 있으면 error 배열 안에 error객체가 생김
-      const isEmailError = errors[0].constraints?.hasOwnProperty('isEmail');
-
-      if (isEmailError) {
-        // isEmail 에러가 있으면 커스텀 예외를 던짐
-        throw new CustomHttpException(ResponseCode.INVALID_EMAIL_FORMAT);
-      }
-    }
+    if (errors.length > 0) throw new CustomHttpException(ResponseCode.INVALID_EMAIL_FORMAT);
 
     return value; // 에러가 없으면 value를 그대로 반환
   }
 
   private toValidate(metatype: any): boolean {
-    const types = [String, Boolean, Number, Array, Object];
-    return !types.find((type) => metatype === type); // metatype이 기본 타입이 아니면 true를 반환
+    return ![String, Boolean, Number, Array, Object].includes(metatype); // metatype이 기본 타입이 아니면 true를 반환
   }
 }

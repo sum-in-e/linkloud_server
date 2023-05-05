@@ -48,6 +48,26 @@ export class EmailVerificationService {
     }
   }
 
+  async confirmVerificationCode(email: string, verificationCode: string) {
+    const emaiVerificationInfo = await this.emailVerificationRepository.findEmailVerification(email, verificationCode);
+
+    if (!emaiVerificationInfo) {
+      throw new CustomHttpException(ResponseCode.NOT_FOUND_VERIFICATION_INFO);
+    }
+
+    const isExpired = emaiVerificationInfo.expired_at < new Date();
+    if (isExpired) {
+      throw new CustomHttpException(ResponseCode.EXPIRED_VERIFICATION_CODE);
+    }
+
+    try {
+      await this.emailVerificationRepository.updateIsVerified(emaiVerificationInfo);
+      return {};
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.FAILED_TO_CONFIRM_VERIFICATION_CODE);
+    }
+  }
+
   // 이메일 인증 번호 생성 메서드
   private generateVerificationCode(): string {
     return Math.floor(Math.random() * 1000000)
