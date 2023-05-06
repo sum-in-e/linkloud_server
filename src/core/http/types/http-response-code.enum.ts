@@ -23,6 +23,8 @@ export enum ResponseCode {
 
   TERMS_NOT_AGREED = 'TERMS_NOT_AGREED', // 약관 동의 안 함
 
+  SIGN_UP_FAILED = 'SIGN_UP_FAILED', // 회원가입 실패
+
   // AUTH 관련 에러
 
   // 외부 서비스 API KEY 에러

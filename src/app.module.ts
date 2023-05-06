@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 import { typeORMConfig } from 'src/configs/typeorm.config';
-import { UsersModule } from 'src/modules/user/user.module';
+import { UserModule } from 'src/modules/user/user.module';
 import { EmailVerificationModule } from 'src/modules/email-verification/email-verification.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpExceptionFilter } from 'src/core/http/filters/http-exception.filter';
@@ -30,7 +30,7 @@ import { SuccessInterceptor } from 'src/core/http/interceptors/http-success.inte
       imports: [ConfigModule],
       useClass: typeORMConfig,
     }), // typeORM 연결
-    UsersModule,
+    UserModule,
     EmailVerificationModule,
   ],
   controllers: [AppController],

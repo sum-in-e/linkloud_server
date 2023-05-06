@@ -2,25 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { CustomHttpException } from 'src/core/http/http-exception';
-import { User } from 'src/modules/user/entities/user.entity';
 import sgMail from '@sendgrid/mail';
 import * as fs from 'fs';
 import * as path from 'path';
 import { EmailVerificationRepository } from 'src/modules/email-verification/repository/email-verification.repository';
+import { UserRepository } from 'src/modules/user/repository/user.repository';
 
 @Injectable()
 export class EmailVerificationService {
   constructor(
     private readonly configService: ConfigService,
     private readonly emailVerificationRepository: EmailVerificationRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async sendVerificationCode(email: string) {
     // 이미 가입된 이메일인지 확인
-    const user = await User.findOne({ where: { email } });
+    const user = await this.userRepository.findUserByEmail(email);
 
     if (user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST);
+      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.');
     }
 
     // 이메일 인증 번호 생성
@@ -36,7 +37,7 @@ export class EmailVerificationService {
     }
 
     try {
-      const savedEmailVerificationData = await this.emailVerificationRepository.saveEmailVerification(
+      const savedEmailVerificationData = await this.emailVerificationRepository.createEmailVerification(
         email,
         verification_code,
       );
@@ -44,7 +45,7 @@ export class EmailVerificationService {
 
       return { expiredAt: savedEmailVerificationData.expired_at };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.FAILED_TO_SEND_EMAIL, 'Failed to send email verification code');
+      throw new CustomHttpException(ResponseCode.FAILED_TO_SEND_EMAIL, '인증번호 발송에 실패하였습니다.');
     }
   }
 

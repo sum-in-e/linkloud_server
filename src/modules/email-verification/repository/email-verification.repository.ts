@@ -13,11 +13,8 @@ export class EmailVerificationRepository {
 
   /**
    * email_verification 테이블에 이메일 인증을 위한 정보를 저장합니다.
-   * @param email
-   * @param verification_code
-   * @returns EmailVerification
    */
-  async saveEmailVerification(email: string, verification_code: string): Promise<EmailVerification> {
+  async createEmailVerification(email: string, verification_code: string): Promise<EmailVerification> {
     const emailVerification = new EmailVerification();
     emailVerification.email = email;
     emailVerification.verification_code = verification_code;
@@ -27,9 +24,6 @@ export class EmailVerificationRepository {
 
   /**
    * email_verification 테이블에 있는 컬럼 중 email과 verificationCode가 일치하는 컬럼을 찾습니다.
-   * @param email
-   * @param verificationCode
-   * @returns mailVerification | null
    */
   async findEmailVerification(email: string, verificationCode: string): Promise<EmailVerification | null> {
     return await EmailVerification.findOne({
@@ -38,11 +32,16 @@ export class EmailVerificationRepository {
   }
   /**
    * email_verification 테이블에 있는 컬럼의 is_verified 값을 true로 변경합니다.
-   * @param emailVerification
-   * @returns emailVerification
    */
   async updateIsVerified(emailVerification: EmailVerification): Promise<EmailVerification> {
     emailVerification.is_verified = true;
     return await emailVerification.save();
+  }
+
+  /**
+   * 이메일이 인증 되었는지 확인합니다.
+   */
+  async checkVerifiedEmail(email: string): Promise<EmailVerification | null> {
+    return await this.emailVerificationRepository.findOne({ where: { email: email, is_verified: true } });
   }
 }
