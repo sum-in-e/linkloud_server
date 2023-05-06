@@ -13,14 +13,14 @@ import { EmailVerificationPipe } from 'src/modules/email-verification/pipes/emai
 export class EmailVerificationController {
   constructor(private readonly emailService: EmailVerificationService) {}
 
-  @ApiOperation({ summary: '인증 코드를 발송합니다.' })
+  @ApiOperation({ summary: '인증 코드 발송' })
   @Post('send')
   @UsePipes(EmailVerificationPipe)
   async sendVerificationCode(@Query() emailVerificationDto: EmailVerificationDto) {
     return await this.emailService.sendVerificationCode(emailVerificationDto.email);
   }
 
-  @ApiOperation({ summary: '인증 코드를 확인합니다.' })
+  @ApiOperation({ summary: '인증 코드 검증' })
   @Post('confirm')
   async confirmVerificationCode(@Query() emailVerificationConfirmDto: EmailVerificationConfirmDto) {
     return await this.emailService.confirmVerificationCode(
