@@ -22,7 +22,6 @@ export class UserRepository {
     user.password = hashedPassword;
     user.name = body.name;
     user.method = 'email';
-    user.isVerified = true;
 
     return await this.userRepository.save(user);
   }
@@ -32,7 +31,6 @@ export class UserRepository {
     user.email = body.email;
     user.name = body.name;
     user.method = 'kakao';
-    user.isVerified = true;
 
     return await this.userRepository.save(user);
   }
