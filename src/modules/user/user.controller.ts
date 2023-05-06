@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, UsePipes } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SignUpDto } from 'src/modules/user/dto/user.dto';
-import { User } from 'src/modules/user/entities/user.entity';
+import { KakaoSignUpDto, SignUpDto } from 'src/modules/user/dto/user.dto';
+import { KakaoSignUpPipe } from 'src/modules/user/pipes/kakao-signup.pipe';
 import { SignUpPipe } from 'src/modules/user/pipes/signup.pipe';
 import { UserService } from 'src/modules/user/user.service';
 @ApiTags('유저 APIs')
@@ -16,11 +16,12 @@ export class UserController {
     return await this.userService.createUser(body);
   }
 
-  // @ApiOperation({ summary: '카카오 회원가입' })
-  // @Post()
-  // async createUserByKakao(@Body() user: User) {
-  //   return await this.userService.createUserByKakao(user);
-  // }
+  @ApiOperation({ summary: '카카오 회원가입' })
+  @Post('signup/kakao')
+  @UsePipes(KakaoSignUpPipe)
+  async createUserByKakao(@Body() body: KakaoSignUpDto) {
+    return await this.userService.createUserByKakao(body);
+  }
 
   // TODO: 로그인
   // TODO: 로그인 - 카카오

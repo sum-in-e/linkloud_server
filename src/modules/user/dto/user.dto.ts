@@ -40,3 +40,32 @@ export class SignUpDto {
   @Equals(true)
   isAgreeTermsOfUse!: boolean;
 }
+
+export class KakaoSignUpDto {
+  @ApiProperty({
+    description: '이메일',
+    example: 'example@linkloud.co.kr',
+  })
+  @IsEmail()
+  email!: string;
+
+  @ApiProperty({
+    description: '유저명(닉네임) / 카카오에서 넘어오는 닉네임 그대로 이용',
+  })
+  @IsString()
+  name!: string;
+
+  @ApiProperty({
+    description: '개인정보제공동의 여부',
+  })
+  @IsBoolean()
+  @Equals(true)
+  isAgreeProvidePersonalInfo!: boolean;
+
+  @ApiProperty({
+    description: '이용약관동의 여부',
+  })
+  @IsBoolean()
+  @Equals(true)
+  isAgreeTermsOfUse!: boolean;
+}
