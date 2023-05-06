@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { EmailVerificationRepository } from 'src/modules/email-verification/repository/email-verification.repository';
-import { SignUpDto } from 'src/modules/user/dto/user.dto';
+import { KakaoSignUpDto, SignUpDto } from 'src/modules/user/dto/user.dto';
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
 import bcrypt from 'bcrypt';
@@ -14,13 +14,12 @@ export class UserService {
     private readonly emailVerificationRepository: EmailVerificationRepository,
   ) {}
 
+  /**
+   * @remarks 이메일 회원가입
+   */
   async createUser(body: SignUpDto): Promise<Pick<User, 'email' | 'method'>> {
     // 이미 가입된 이메일인지 확인
-    const user = await this.userRepository.findUserByEmail(body.email);
-
-    if (user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.');
-    }
+    await this.checkAlreadyExistUser(body.email);
 
     // 이메일 인증 여부 검증
     const chekcVerifiedEmail = await this.emailVerificationRepository.checkVerifiedEmail(body.email);
@@ -45,9 +44,36 @@ export class UserService {
     }
   }
 
-  // async createUserByKakao(user: User) {
-  //   return await this.userRepository.save(user);
-  // }
+  /**
+   * @remarks 카카오 회원가입
+   */
+  async createUserByKakao(body: KakaoSignUpDto) {
+    // 이미 가입된 이메일인지 확인
+    await this.checkAlreadyExistUser(body.email);
+
+    // DB에 저장
+    try {
+      const result = await this.userRepository.createUserByKakao(body);
+      return {
+        email: result.email,
+        method: result.method,
+      };
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.');
+    }
+  }
+  /**
+   * @remarks 가입된 계정인지 체크하는 메서드
+   */
+  private async checkAlreadyExistUser(email: string) {
+    const user = await this.userRepository.findUserByEmail(email);
+
+    if (user) {
+      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.');
+    }
+
+    return user;
+  }
 }
 
 // // * 비밀번호 검증
