@@ -23,14 +23,11 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   password!: string | null;
 
-  @Column({ type: 'varchar', length: 32 })
+  @Column({ type: 'varchar', length: 255 })
   name!: string;
 
   @Column()
   method!: AuthMethodType;
-
-  @Column({ type: 'boolean', default: false, nullable: false })
-  isVerified!: boolean;
 
   @Column({ type: 'boolean', default: false, nullable: false })
   isInactive!: boolean;
