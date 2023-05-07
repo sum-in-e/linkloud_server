@@ -52,6 +52,8 @@ export class KakaoSignUpDto {
   @ApiProperty({
     description: '유저명(닉네임) / 카카오에서 넘어오는 닉네임 그대로 이용',
   })
+  @MinLength(2, { message: '유저명은 최소 2자 이상이어야 합니다.' })
+  @MaxLength(15, { message: '유저명은 최대 15자 이하여야 합니다.' })
   @IsString()
   name!: string;
 
