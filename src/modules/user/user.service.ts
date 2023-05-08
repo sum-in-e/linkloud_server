@@ -6,6 +6,7 @@ import { KakaoSignUpDto, SignUpDto } from 'src/modules/user/dto/user.dto';
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
 import bcrypt from 'bcrypt';
+import { AuthMethodType } from 'src/modules/user/types/user.type';
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,7 @@ export class UserService {
    */
   async createUser(body: SignUpDto): Promise<Pick<User, 'email' | 'method'>> {
     // 이미 가입된 이메일인지 확인
-    await this.checkAlreadyExistUser(body.email);
+    await this.checkUser(body.email, 'email');
 
     // 이메일 인증 여부 검증
     const chekcVerifiedEmail = await this.emailVerificationRepository.checkVerifiedEmail(body.email);
@@ -49,9 +50,8 @@ export class UserService {
    */
   async createUserByKakao(body: KakaoSignUpDto) {
     // 이미 가입된 이메일인지 확인
-    await this.checkAlreadyExistUser(body.email);
+    await this.checkUser(body.email, 'kakao');
 
-    // DB에 저장
     try {
       const result = await this.userRepository.createUserByKakao(body);
       return {
@@ -65,12 +65,22 @@ export class UserService {
   /**
    * @remarks 가입된 계정인지 체크하는 메서드
    */
-  private async checkAlreadyExistUser(email: string) {
+  private async checkUser(email: string, method: AuthMethodType) {
     const user = await this.userRepository.findUserByEmail(email);
 
-    if (user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.');
+    if (user?.deletedAt) {
+      throw new CustomHttpException(ResponseCode.DELETED_USER, '회원 탈퇴 처리된 이메일입니다.', {
+        data: { method },
+      });
     }
+
+    if (user) {
+      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.', {
+        data: { method },
+      });
+    }
+
+    // TODO: 휴면 처리된 계정인지 확인
 
     return user;
   }

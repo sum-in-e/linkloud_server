@@ -25,6 +25,8 @@ export enum ResponseCode {
 
   SIGN_UP_FAILED = 'SIGN_UP_FAILED', // 회원가입 실패
 
+  DELETED_USER = 'DELETED_USER', // 회원탈퇴된 계정
+
   // AUTH 관련 에러
 
   // 외부 서비스 API KEY 에러

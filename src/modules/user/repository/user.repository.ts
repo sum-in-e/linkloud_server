@@ -13,7 +13,7 @@ export class UserRepository {
   ) {}
 
   async findUserByEmail(email: string): Promise<User | null> {
-    return await User.findOne({ where: { email } });
+    return await User.findOne({ where: { email }, withDeleted: true }); //
   }
 
   async createUserByEmail(body: SignUpDto, hashedPassword: string): Promise<User> {
