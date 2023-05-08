@@ -24,14 +24,17 @@ export class HttpExceptionFilter {
     let code: ResponseCode;
     let status: number;
     const message: string = exception.message;
+    let data: unknown | null = null;
 
     // 예외 객체가 HttpException 타입인지 확인
     if (exception instanceof HttpException) {
       // * HttpException 타입일 경우
       status = exception.getStatus();
+      data = null;
       if (exception instanceof CustomHttpException) {
         // 커스텀 예외 객체일 경우
         code = exception.code;
+        if (exception.data) data = exception.data;
       } else {
         //  정의하지 않은 HttpException일 경우
         code = ResponseCode.UNKNOWN_ERROR;
@@ -42,6 +45,6 @@ export class HttpExceptionFilter {
       code = ResponseCode.INTERNAL_SERVER_ERROR;
     }
 
-    response.status(status).json(this.httpResponseBuilder.buildErrorResponse(status, message, code));
+    response.status(status).json(this.httpResponseBuilder.buildErrorResponse(status, message, code, data));
   }
 }
