@@ -10,11 +10,15 @@ import { UserRepository } from 'src/modules/user/repository/user.repository';
 
 @Injectable()
 export class EmailVerificationService {
+  private readonly SENDGRID_API_KEY: string;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly emailVerificationRepository: EmailVerificationRepository,
     private readonly userRepository: UserRepository,
-  ) {}
+  ) {
+    this.SENDGRID_API_KEY = this.configService.getOrThrow('SENDGRID_API_KEY');
+  }
 
   async sendVerificationCode(email: string) {
     // 이미 가입된 이메일인지 확인
@@ -27,21 +31,12 @@ export class EmailVerificationService {
     // 이메일 인증 번호 생성
     const verification_code = this.generateVerificationCode();
 
-    const apiKey = this.configService.get('SENDGRID_API_KEY');
-
-    if (!apiKey) {
-      throw new CustomHttpException(
-        ResponseCode.SENDGRID_API_KEY_NOT_FOUND,
-        'SendGrid API key is not found in environment variables',
-      );
-    }
-
     try {
       const savedEmailVerificationData = await this.emailVerificationRepository.createEmailVerification(
         email,
         verification_code,
       );
-      await this.sendEmail(email, verification_code, apiKey);
+      await this.sendEmail(email, verification_code, this.SENDGRID_API_KEY);
 
       return { expiredAt: savedEmailVerificationData.expired_at };
     } catch (error) {

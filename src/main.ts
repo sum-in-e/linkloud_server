@@ -20,7 +20,7 @@ async function bootstrap() {
   const swaggerID = configService.get('SWAGGER_USER');
   const swaggerPW = configService.get('SWAGGER_PASSWORD');
 
-  // Add basic auth middleware
+  // Swagger 설정
   app.use(
     ['/docs', '/docs-json'],
     basicAuth({
@@ -32,6 +32,17 @@ async function bootstrap() {
   );
 
   SwaggerModule.setup('docs', app, document);
+
+  // CORS 옵션 정의
+  const corsOptions = {
+    origin: ['http://linkloud.co.kr'], // whitelist에 추가할 도메인
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    credentials: true, // *🚨프론트에도 withCredential:true 설정 필요
+  };
+
+  // CORS 옵션 적용
+  app.enableCors(corsOptions);
 
   const port = configService.get('PORT');
   await app.listen(port);

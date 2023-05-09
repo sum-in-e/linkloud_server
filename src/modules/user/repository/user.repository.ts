@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
-import { KakaoSignUpDto, SignUpDto } from 'src/modules/user/dto/user.dto';
+import { SignUpDto } from 'src/modules/user/dto/user.dto';
 
 // 💡repository 내에서 에러를 던지는 것은 좋지 않다. repository는 데이터베이스와 통신하는 로직만 담당하고, 에러 처리는 service나 controller에서 하는 것이 좋다.
 @Injectable()
@@ -13,7 +13,7 @@ export class UserRepository {
   ) {}
 
   async findUserByEmail(email: string): Promise<User | null> {
-    return await User.findOne({ where: { email }, withDeleted: true }); //
+    return await this.userRepository.findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴
   }
 
   async createUserByEmail(body: SignUpDto, hashedPassword: string): Promise<User> {
@@ -26,10 +26,10 @@ export class UserRepository {
     return await this.userRepository.save(user);
   }
 
-  async createUserByKakao(body: KakaoSignUpDto): Promise<User> {
+  async createUserByKakao(email: string, name: string): Promise<User> {
     const user = new User();
-    user.email = body.email;
-    user.name = body.name;
+    user.email = email;
+    user.name = name;
     user.method = 'kakao';
 
     return await this.userRepository.save(user);

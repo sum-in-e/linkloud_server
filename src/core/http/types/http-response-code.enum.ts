@@ -10,7 +10,10 @@ export enum ResponseCode {
   // 가입 관련 에러
   INVALID_EMAIL_FORMAT = 'INVALID_EMAIL_FORMAT', // 이메일 형식 이상
   EMAIL_ALREADY_EXIST = 'EMAIL_ALREADY_EXIST', // 이미 가입된 이메일
+  EMAIL_NOT_EXIST = 'EMAIL_NOT_EXIST', // 존재하지 않는 이메일
   NOT_VERIFIED_EMAIL = 'NOT_VERIFIED_EMAIL', // 인증되지 않은 이메일
+  SIGNED_BY_KAKAO = 'SIGNED_BY_KAKAO', // 카카오로 가입된 계정임
+  SIGNED_BY_EMAIL = 'SIGNED_BY_EMAIL', // 이메일로 가입된 계정임
 
   FAILED_TO_SEND_EMAIL = 'FAILED_TO_SEND_EMAIL', // Sendgrid로 이메일 전송 실패
   NOT_FOUND_VERIFICATION_INFO = 'NOT_FOUND_VERIFICATION_INFO', // 이메일과 인증번호가 일치하는 데이터 못찾음
@@ -20,17 +23,17 @@ export enum ResponseCode {
   INVALID_NAME_FORMAT = 'INVALID_NAME_FORMAT', // 닉네임 형식 이상
 
   INVALID_PASSWORD_FORMAT = 'INVALID_PASSWORD_FORMAT', // 비밀번호 형식 이상
-
+  WRONG_PASSWORD = 'WRONG_PASSWORD', // 비밀번호 틀림
   TERMS_NOT_AGREED = 'TERMS_NOT_AGREED', // 약관 동의 안 함
 
   SIGN_UP_FAILED = 'SIGN_UP_FAILED', // 회원가입 실패
+  LOGIN_FAILED = 'LOGIN_FAILED', // 회원가입 실패
 
   DELETED_USER = 'DELETED_USER', // 회원탈퇴된 계정
 
-  // AUTH 관련 에러
+  FAILED_TO_CONNECT_WITH_KAKAO = 'FAILED_TO_CONNECT_WITH_KAKAO',
 
-  // 외부 서비스 API KEY 에러
-  SENDGRID_API_KEY_NOT_FOUND = 'SENDGRID_API_KEY_NOT_FOUND',
+  // AUTH 관련 에러
 
   //404 에러
   NOT_FOUND = 'NOT_FOUND',
