@@ -5,6 +5,7 @@ export interface ErrorResponse {
   message: string;
   error: {
     code: ResponseCode;
+    data: unknown;
   };
 }
 

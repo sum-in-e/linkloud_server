@@ -43,14 +43,13 @@ export class SignUpDto {
 
 export class KakaoSignUpDto {
   @ApiProperty({
-    description: '이메일',
-    example: 'example@linkloud.co.kr',
+    description: 'sub(카카오 서버로부터 받은 id_token에 있는 sub -> 카카오 유저 아이디)',
   })
-  @IsEmail()
-  email!: string;
+  @IsString()
+  sub!: string;
 
   @ApiProperty({
-    description: '유저명(닉네임) / 카카오에서 넘어오는 닉네임 그대로 이용',
+    description: '유저명(닉네임) / 2~15자',
   })
   @MinLength(2, { message: '유저명은 최소 2자 이상이어야 합니다.' })
   @MaxLength(15, { message: '유저명은 최대 15자 이하여야 합니다.' })
@@ -70,4 +69,18 @@ export class KakaoSignUpDto {
   @IsBoolean()
   @Equals(true)
   isAgreeTermsOfUse!: boolean;
+}
+
+export class LoginDto {
+  @ApiProperty({
+    description: '이메일',
+  })
+  @IsEmail()
+  email!: string;
+
+  @ApiProperty({
+    description: '비밀번호',
+  })
+  @IsString()
+  password!: string;
 }

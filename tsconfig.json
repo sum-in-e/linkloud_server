@@ -75,5 +75,5 @@
   },
   "files": ["src/main.ts"],
   "exclude": ["node_modules", "./dist"],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/modules/user/utils/jwt..utilts"]
 }

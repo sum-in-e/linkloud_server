@@ -5,12 +5,13 @@ import { ErrorResponse, SuccessResponse } from 'src/core/http/types/http-respons
 @Injectable()
 export class HttpResponseBuilder {
   // 모든 예외 처리 발생 시 전역으로 설정한 HttpExceptionFilter를 거치게 되므로 HttpExceptionFilter에서 buildErrorResponse를 사용해 에러 응답 형태를 일관성 있게 유지한다.
-  buildErrorResponse(status: HttpStatus, message: string, code: ResponseCode): ErrorResponse {
+  buildErrorResponse(status: HttpStatus, message: string, code: ResponseCode, data?: unknown): ErrorResponse {
     return {
       status, // ex. 400, 401, 404, 500 etc..
       message,
       error: {
         code,
+        data,
       },
     };
   }
