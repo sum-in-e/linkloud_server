@@ -107,8 +107,10 @@ export class UserController {
 
   @ApiOperation({ summary: '로그아웃' })
   @Post('logout')
-  async logout() {
-    //
+  async logout(@Res({ passthrough: true }) response: Response) {
+    response.cookie('act', '', { maxAge: 0, httpOnly: true, secure: true, sameSite: 'lax' });
+    response.cookie('rft', '', { maxAge: 0, httpOnly: true, secure: true, sameSite: 'lax' });
+    return {};
   }
 
   // TODO: 로그인한 유저 정보 조회 - acc 토큰 기반으로 현재 로그인 유저 인식
