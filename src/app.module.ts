@@ -11,6 +11,8 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpExceptionFilter } from 'src/core/http/filters/http-exception.filter';
 import { HttpResponseBuilder } from 'src/core/http/util/http-response-builder';
 import { SuccessInterceptor } from 'src/core/http/interceptors/http-success.interceptor';
+import { LinkModule } from 'src/modules/link/link.module';
+import { CloudModule } from 'src/modules/cloud/cloud.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { SuccessInterceptor } from 'src/core/http/interceptors/http-success.inte
     }), // typeORM 연결
     UserModule,
     EmailVerificationModule,
+    LinkModule,
+    CloudModule,
   ],
   controllers: [AppController],
   providers: [
