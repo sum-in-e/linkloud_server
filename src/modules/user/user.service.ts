@@ -9,11 +9,12 @@ import bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao-virification-info.ropository';
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
 
 @Injectable()
 export class UserService {
   private readonly JWT_SECRET_KEY: string;
+  private readonly MODE: string;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
@@ -22,6 +23,7 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {
     this.JWT_SECRET_KEY = this.configService.getOrThrow('JWT_SECRET_KEY');
+    this.MODE = this.configService.getOrThrow('MODE');
   }
 
   /**
@@ -189,41 +191,6 @@ export class UserService {
     }
 
     return user;
-  }
-
-  /**
-   * @description JWT로 액세스토큰과 리프레시토큰 생성하고 응답 헤더에 저장하는 메서드
-   */
-  async setTokens(
-    userId: number,
-    email: string,
-    response: Response,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const accessToken = await this.jwtService.signAsync(
-      { userId, email },
-      { expiresIn: '7d', secret: this.JWT_SECRET_KEY },
-    );
-    const refreshToken = await this.jwtService.signAsync(
-      { userId, email },
-      { expiresIn: '30d', secret: this.JWT_SECRET_KEY },
-    );
-
-    // 💡 response.cookie() 메서드는 내부적으로 Set-Cookie 헤더를 사용하여 응답 헤더에 쿠키를 설정한다.
-    response.cookie('act', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-    });
-    response.cookie('rft', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-    });
-
-    return {
-      accessToken,
-      refreshToken,
-    };
   }
 
   /**

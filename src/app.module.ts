@@ -13,6 +13,7 @@ import { HttpResponseBuilder } from 'src/core/http/util/http-response-builder';
 import { SuccessInterceptor } from 'src/core/http/interceptors/http-success.interceptor';
 import { LinkModule } from 'src/modules/link/link.module';
 import { CloudModule } from 'src/modules/cloud/cloud.module';
+import { AuthModule } from 'src/core/auth/auth.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { CloudModule } from 'src/modules/cloud/cloud.module';
     EmailVerificationModule,
     LinkModule,
     CloudModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

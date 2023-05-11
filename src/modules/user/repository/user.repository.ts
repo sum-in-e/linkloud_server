@@ -12,8 +12,12 @@ export class UserRepository {
     private userRepository: Repository<User>,
   ) {}
 
+  async findUserByEmailWithoutDeleted(email: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
+
   async findUserByEmail(email: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴
+    return await this.userRepository.findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴 -> 회원가입, 로그인에서 써서 탈퇴 계정 안내하려고
   }
 
   async createUserByEmail(body: SignUpDto, hashedPassword: string): Promise<User> {

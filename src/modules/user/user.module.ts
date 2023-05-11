@@ -14,6 +14,7 @@ import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao
 import { JwtService } from '@nestjs/jwt';
 import { LinkModule } from 'src/modules/link/link.module';
 import { CloudModule } from 'src/modules/cloud/cloud.module';
+import { AuthService } from 'src/core/auth/auth.service';
 
 @Module({
   imports: [
@@ -21,11 +22,13 @@ import { CloudModule } from 'src/modules/cloud/cloud.module';
     forwardRef(() => EmailVerificationModule),
     forwardRef(() => CloudModule),
     forwardRef(() => LinkModule),
+    forwardRef(() => UserModule),
     HttpModule,
   ],
   controllers: [UserController],
   providers: [
     UserService,
+    AuthService,
     KakaoOauthService,
     ConfigService,
     JwtService,

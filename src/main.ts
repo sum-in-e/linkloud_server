@@ -1,8 +1,10 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import basicAuth from 'express-basic-auth';
+import { AuthGuard } from 'src/core/auth/guard/auth.guard';
+import { AuthService } from 'src/core/auth/auth.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +18,11 @@ async function bootstrap() {
     .addTag('Linkloud')
     .build();
   const document = SwaggerModule.createDocument(app, config);
+
+  const authService = app.get(AuthService);
+  const reflector = app.get(Reflector);
+
+  app.useGlobalGuards(new AuthGuard(authService, reflector));
 
   const swaggerID = configService.get('SWAGGER_USER');
   const swaggerPW = configService.get('SWAGGER_PASSWORD');
