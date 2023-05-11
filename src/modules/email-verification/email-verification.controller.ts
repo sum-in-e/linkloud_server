@@ -1,5 +1,6 @@
 import { Controller, Post, Query, UsePipes } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 
 import {
   EmailVerificationConfirmDto,
@@ -16,12 +17,14 @@ export class EmailVerificationController {
   @ApiOperation({ summary: '인증 코드 발송' })
   @Post('send')
   @UsePipes(EmailVerificationPipe)
+  @IsPublic()
   async sendVerificationCode(@Query() emailVerificationDto: EmailVerificationDto) {
     return await this.emailService.sendVerificationCode(emailVerificationDto.email);
   }
 
   @ApiOperation({ summary: '인증 코드 검증' })
   @Post('confirm')
+  @IsPublic()
   async confirmVerificationCode(@Query() emailVerificationConfirmDto: EmailVerificationConfirmDto) {
     return await this.emailService.confirmVerificationCode(
       emailVerificationConfirmDto.email,

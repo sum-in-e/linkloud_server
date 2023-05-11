@@ -7,6 +7,8 @@ import { UserService } from 'src/modules/user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { DisableSuccessInterceptor } from 'src/core/http/decorator/disable-success-interceptor.decorator';
+import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
+import { AuthService } from 'src/core/auth/auth.service';
 
 @ApiTags('유저 APIs')
 @Controller('user')
@@ -16,6 +18,7 @@ export class UserController {
 
   constructor(
     private readonly userService: UserService,
+    private readonly authService: AuthService,
     private readonly kakaoOauthService: KakaoOauthService,
     private readonly configService: ConfigService,
   ) {
@@ -26,11 +29,12 @@ export class UserController {
   @ApiOperation({ summary: '이메일 회원가입 ' })
   @Post('signup')
   @UsePipes(SignUpPipe)
+  @IsPublic()
   async createUser(@Body() body: SignUpDto, @Res({ passthrough: true }) response: Response) {
     const user = await this.userService.createUser(body);
 
     // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
-    await this.userService.setTokens(user.id, user.email, response);
+    await this.authService.generateTokens(user.id, user.email, response);
 
     return {
       email: user.email,
@@ -42,11 +46,12 @@ export class UserController {
     summary: '이메일 로그인',
   })
   @Post('login')
+  @IsPublic()
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) response: Response) {
     const user = await this.userService.verifyUser(body);
 
     // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
-    await this.userService.setTokens(user.id, user.email, response);
+    await this.authService.generateTokens(user.id, user.email, response);
 
     return {
       email: user.email,
@@ -59,6 +64,7 @@ export class UserController {
     description: '카카오 서버로부터 유저 정보를 받아와 kakaoVerificationInfo에 저장합니다.',
   })
   @Get('signup/oauth-kakao')
+  @IsPublic()
   async kakaoOauthSignupCallback(@Query('code') code: string) {
     const { email, sub } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_SIGNUP_REDIRECT_URI);
 
@@ -71,11 +77,12 @@ export class UserController {
       '회원가입 완료를 위해 유저에게 추가적으로 닉네임 입력과 약관 동의를 받아 호출하는 API로 kakaoVerificationInfo에 저장된 유저 정보와 대조하여 인증을 확인한 후, 회원가입 완료 후 쿠키에 엑세스토큰과 리프레시토큰을 저장합니다.',
   })
   @Post('signup/kakao')
+  @IsPublic()
   async createUserByKakao(@Body() body: KakaoSignUpDto, @Res({ passthrough: true }) response: Response) {
     const user = await this.userService.createUserByKakao(body);
 
     // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
-    await this.userService.setTokens(user.id, user.email, response);
+    await this.authService.generateTokens(user.id, user.email, response);
 
     return {
       email: user.email,
@@ -90,13 +97,14 @@ export class UserController {
   })
   @Get('login/oauth-kakao')
   @DisableSuccessInterceptor()
+  @IsPublic()
   async kakaoOauthLoginCallback(@Query('code') code: string, @Res({ passthrough: true }) response: Response) {
     const { email, sub } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_LOGIN_REDIRECT_URI);
 
     const user = await this.userService.verifyKakaoUser(email);
 
     // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
-    await this.userService.setTokens(user.id, user.email, response);
+    await this.authService.generateTokens(user.id, user.email, response);
 
     // 클라이언트로 리다이렉트
     // TODO: 회원가입 완료 페이지로 유저 리다이렉트 시키기
@@ -107,6 +115,7 @@ export class UserController {
 
   @ApiOperation({ summary: '로그아웃' })
   @Post('logout')
+  @IsPublic()
   async logout(@Res({ passthrough: true }) response: Response) {
     response.cookie('act', '', { maxAge: 0, httpOnly: true, secure: true, sameSite: 'lax' });
     response.cookie('rft', '', { maxAge: 0, httpOnly: true, secure: true, sameSite: 'lax' });
