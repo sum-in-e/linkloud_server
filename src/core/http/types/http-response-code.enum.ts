@@ -31,9 +31,12 @@ export enum ResponseCode {
 
   DELETED_USER = 'DELETED_USER', // 회원탈퇴된 계정
 
-  FAILED_TO_CONNECT_WITH_KAKAO = 'FAILED_TO_CONNECT_WITH_KAKAO',
+  FAILED_TO_CONNECT_WITH_KAKAO = 'FAILED_TO_CONNECT_WITH_KAKAO', // 카카오 서버와 연동 실패
 
   // AUTH 관련 에러
+
+  // Link 관련 에러
+  INVALID_URL = 'INVALID_URL',
 
   //404 에러
   NOT_FOUND = 'NOT_FOUND',
