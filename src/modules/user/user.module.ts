@@ -12,16 +12,23 @@ import { UserService } from 'src/modules/user/user.service';
 import { JwtUtil } from 'src/modules/user/utils/jwt.util';
 import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao-virification-info.ropository';
 import { JwtService } from '@nestjs/jwt';
+import { LinkModule } from 'src/modules/link/link.module';
+import { CloudModule } from 'src/modules/cloud/cloud.module';
+import { AuthService } from 'src/core/auth/auth.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, KakaoVericationInfo]),
     forwardRef(() => EmailVerificationModule),
+    forwardRef(() => CloudModule),
+    forwardRef(() => LinkModule),
+    forwardRef(() => UserModule),
     HttpModule,
   ],
   controllers: [UserController],
   providers: [
     UserService,
+    AuthService,
     KakaoOauthService,
     ConfigService,
     JwtService,
