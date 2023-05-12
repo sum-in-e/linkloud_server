@@ -46,6 +46,9 @@ export enum ResponseCode {
   // Link 관련 에러
   INVALID_URL = 'INVALID_URL',
 
+  // Cloud 관련 에러
+  CLOUD_NOT_FOUND = 'CLOUD_NOT_FOUND',
+
   //404 에러
   NOT_FOUND = 'NOT_FOUND',
 

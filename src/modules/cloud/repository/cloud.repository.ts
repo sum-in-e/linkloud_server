@@ -18,4 +18,12 @@ export class CloudRepository {
 
     return await queryRunner.manager.save(cloud);
   }
+
+  async findCloudByIdAndUser(id: number, userId: number): Promise<Cloud | null> {
+    return this.cloudRepository
+      .createQueryBuilder('cloud')
+      .where('cloud.id = :id', { id })
+      .andWhere('cloud.user = :userId', { userId: userId })
+      .getOne();
+  }
 }

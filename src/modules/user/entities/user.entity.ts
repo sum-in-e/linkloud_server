@@ -48,13 +48,13 @@ export class User extends BaseEntity {
   deletedAt!: Date | null;
 
   @OneToMany(() => Link, (link) => link.user, {
-    onDelete: 'NO ACTION',
+    onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
   })
   links!: Link[] | [];
 
   @OneToMany(() => Cloud, (cloud) => cloud.user, {
-    onDelete: 'NO ACTION',
+    onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
   })
   clouds!: Cloud[];

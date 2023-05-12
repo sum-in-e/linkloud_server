@@ -19,11 +19,8 @@ export class Cloud {
   })
   id!: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 50, default: '미분류' })
   name!: string;
-
-  @Column({ type: 'varchar', length: 255, default: '' })
-  description!: string; // 기획적으로는 아직 쓰일 일이 없지만 추후 필요할 가능성 있는 테이블이니 미리 만듦
 
   @ManyToOne(() => User, (user) => user.clouds, {
     onDelete: 'CASCADE',
@@ -32,7 +29,7 @@ export class Cloud {
   user!: User;
 
   @OneToMany(() => Link, (link) => link.cloud, {
-    onDelete: 'NO ACTION', // 클라우드에 있는 링크가 삭제되어도 클라우드는 제거되면 안 된다.
+    onDelete: 'SET NULL', // 클라우드에 있는 링크가 삭제되어도 클라우드는 제거되면 안 된다. NO ACTION은 존재하지 않는 링크를 참조하게 될 수 있기 때문에 null로 변하게 해야한다.
     onUpdate: 'CASCADE',
   })
   links!: Link[] | [];
