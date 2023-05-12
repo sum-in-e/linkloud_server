@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 import { SignUpDto } from 'src/modules/user/dto/user.dto';
 
@@ -20,22 +20,26 @@ export class UserRepository {
     return await this.userRepository.findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴 -> 회원가입, 로그인에서 써서 탈퇴 계정 안내하려고
   }
 
-  async createUserByEmail(body: SignUpDto, hashedPassword: string): Promise<User> {
+  async findUserByEmailInTransaction(email: string, queryRunner: QueryRunner): Promise<User | null> {
+    return await queryRunner.manager.getRepository(User).findOne({ where: { email } });
+  }
+
+  async createUserByEmail(body: SignUpDto, hashedPassword: string, queryRunner: QueryRunner): Promise<User> {
     const user = new User();
     user.email = body.email;
     user.password = hashedPassword;
     user.name = body.name;
     user.method = 'email';
 
-    return await this.userRepository.save(user);
+    return await queryRunner.manager.save(user);
   }
 
-  async createUserByKakao(email: string, name: string): Promise<User> {
+  async createUserByKakao(email: string, name: string, queryRunner: QueryRunner): Promise<User> {
     const user = new User();
     user.email = email;
     user.name = name;
     user.method = 'kakao';
 
-    return await this.userRepository.save(user);
+    return await queryRunner.manager.save(user);
   }
 }

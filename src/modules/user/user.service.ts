@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import bcrypt from 'bcrypt';
+import { QueryRunner } from 'typeorm';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { EmailVerificationRepository } from 'src/modules/email-verification/repository/email-verification.repository';
 import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
-import bcrypt from 'bcrypt';
-import { ConfigService } from '@nestjs/config';
 import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao-virification-info.ropository';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
@@ -20,7 +20,6 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly emailVerificationRepository: EmailVerificationRepository,
     private readonly kakaoVericationInfoRepository: KakaoVericationInfoRepository,
-    private readonly jwtService: JwtService,
   ) {
     this.JWT_SECRET_KEY = this.configService.getOrThrow('JWT_SECRET_KEY');
     this.MODE = this.configService.getOrThrow('MODE');
@@ -29,8 +28,8 @@ export class UserService {
   /**
    * @description 이메일 회원가입
    */
-  async createUser(body: SignUpDto): Promise<Pick<User, 'email' | 'method' | 'id'>> {
-    const user = await this.userRepository.findUserByEmail(body.email);
+  async createUser(body: SignUpDto, queryRunner: QueryRunner): Promise<User> {
+    const user = await this.userRepository.findUserByEmailInTransaction(body.email, queryRunner);
 
     // 계정 검증
     if (user) {
@@ -42,7 +41,7 @@ export class UserService {
     }
 
     // 이메일 인증 여부 검증
-    const chekcVerifiedEmail = await this.emailVerificationRepository.checkVerifiedEmail(body.email);
+    const chekcVerifiedEmail = await this.emailVerificationRepository.checkVerifiedEmail(body.email, queryRunner);
 
     if (!chekcVerifiedEmail) {
       throw new CustomHttpException(ResponseCode.NOT_VERIFIED_EMAIL, '인증되지 않은 이메일입니다.');
@@ -51,14 +50,8 @@ export class UserService {
     // 비밀번호 암호화
     const saltOrRounds = 10; // 암호화 강도
     const hashedPassword = await bcrypt.hash(body.password, saltOrRounds);
-
     try {
-      const result = await this.userRepository.createUserByEmail(body, hashedPassword);
-      return {
-        id: result.id,
-        email: result.email,
-        method: result.method,
-      };
+      return await this.userRepository.createUserByEmail(body, hashedPassword, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.');
     }
@@ -94,9 +87,9 @@ export class UserService {
   /**
    * @description 카카오 회원가입 완료
    */
-  async createUserByKakao(body: KakaoSignUpDto): Promise<Pick<User, 'email' | 'method' | 'id'>> {
+  async createUserByKakao(body: KakaoSignUpDto, queryRunner: QueryRunner): Promise<User> {
     // sub로 kakaoVerificationInfoTable에 있는 유저 정보와 클라이언트에서 보낸 정보가 일치하는지 확인하여 유저 인증
-    const kakaoVerificationInfo = await this.kakaoVericationInfoRepository.findEmailBySub(body.sub);
+    const kakaoVerificationInfo = await this.kakaoVericationInfoRepository.findEmailBySub(body.sub, queryRunner);
 
     if (!kakaoVerificationInfo) {
       throw new CustomHttpException(
@@ -105,7 +98,7 @@ export class UserService {
       );
     }
 
-    const user = await this.userRepository.findUserByEmail(kakaoVerificationInfo.email);
+    const user = await this.userRepository.findUserByEmailInTransaction(kakaoVerificationInfo.email, queryRunner);
 
     // 계정 검증
     if (user) {
@@ -127,13 +120,7 @@ export class UserService {
     }
 
     try {
-      const result = await this.userRepository.createUserByKakao(kakaoVerificationInfo.email, body.name);
-
-      return {
-        id: result.id,
-        email: result.email,
-        method: result.method,
-      };
+      return await this.userRepository.createUserByKakao(kakaoVerificationInfo.email, body.name, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.');
     }

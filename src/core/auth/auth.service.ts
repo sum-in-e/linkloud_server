@@ -71,7 +71,6 @@ export class AuthService {
         }
       }
 
-      console.log('🚨🚨예기치 못한 토큰 손상 에러🚨🚨');
       throw new CustomHttpException(ResponseCode.UNKNOWN_ERROR, ResponseCode.UNKNOWN_ERROR, {
         status: 401,
       });

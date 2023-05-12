@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UsePipes, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
 import { SignUpPipe } from 'src/modules/user/pipes/signup.pipe';
@@ -9,6 +9,10 @@ import { Response } from 'express';
 import { DisableSuccessInterceptor } from 'src/core/http/decorator/disable-success-interceptor.decorator';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { AuthService } from 'src/core/auth/auth.service';
+import { QueryRunner } from 'typeorm';
+import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
+import { TransactionManager } from 'src/core/decorators/transaction.decorator';
+import { CloudService } from 'src/modules/cloud/cloud.service';
 
 @ApiTags('유저 APIs')
 @Controller('user')
@@ -19,6 +23,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    private readonly cloudService: CloudService,
     private readonly kakaoOauthService: KakaoOauthService,
     private readonly configService: ConfigService,
   ) {
@@ -29,11 +34,17 @@ export class UserController {
   @ApiOperation({ summary: '이메일 회원가입 ' })
   @Post('signup')
   @UsePipes(SignUpPipe)
+  @UseInterceptors(TransactionInterceptor)
   @IsPublic()
-  async createUser(@Body() body: SignUpDto, @Res({ passthrough: true }) response: Response) {
-    const user = await this.userService.createUser(body);
+  async createUser(
+    @Body() body: SignUpDto,
+    @Res({ passthrough: true }) response: Response,
+    @TransactionManager() queryRunner: QueryRunner,
+  ) {
+    const user = await this.userService.createUser(body, queryRunner);
+    await this.cloudService.createDefaultCloudForUser(user, queryRunner);
+    // TODO: 가이드용 링크 아이템 생성
 
-    // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
     await this.authService.generateTokens(user.id, user.email, response);
 
     return {
@@ -41,7 +52,6 @@ export class UserController {
       method: user.method,
     };
   }
-
   @ApiOperation({
     summary: '이메일 로그인',
   })
@@ -50,7 +60,6 @@ export class UserController {
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) response: Response) {
     const user = await this.userService.verifyUser(body);
 
-    // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
     await this.authService.generateTokens(user.id, user.email, response);
 
     return {
@@ -77,11 +86,16 @@ export class UserController {
       '회원가입 완료를 위해 유저에게 추가적으로 닉네임 입력과 약관 동의를 받아 호출하는 API로 kakaoVerificationInfo에 저장된 유저 정보와 대조하여 인증을 확인한 후, 회원가입 완료 후 쿠키에 엑세스토큰과 리프레시토큰을 저장합니다.',
   })
   @Post('signup/kakao')
+  @UseInterceptors(TransactionInterceptor)
   @IsPublic()
-  async createUserByKakao(@Body() body: KakaoSignUpDto, @Res({ passthrough: true }) response: Response) {
-    const user = await this.userService.createUserByKakao(body);
-
-    // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
+  async createUserByKakao(
+    @Body() body: KakaoSignUpDto,
+    @Res({ passthrough: true }) response: Response,
+    @TransactionManager() queryRunner: QueryRunner,
+  ) {
+    const user = await this.userService.createUserByKakao(body, queryRunner);
+    await this.cloudService.createDefaultCloudForUser(user, queryRunner);
+    // TODO: 가이드용 링크 아이템 생성
     await this.authService.generateTokens(user.id, user.email, response);
 
     return {
@@ -103,7 +117,6 @@ export class UserController {
 
     const user = await this.userService.verifyKakaoUser(email);
 
-    // 로그인 처리를 위한 토큰 발급 및 쿠키에 토큰 저장
     await this.authService.generateTokens(user.id, user.email, response);
 
     // 클라이언트로 리다이렉트

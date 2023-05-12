@@ -57,5 +57,5 @@ export class User extends BaseEntity {
     onDelete: 'NO ACTION',
     onUpdate: 'CASCADE',
   })
-  clouds!: Cloud[] | [];
+  clouds!: Cloud[];
 }
