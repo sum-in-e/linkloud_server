@@ -47,6 +47,7 @@ export enum ResponseCode {
   INVALID_URL = 'INVALID_URL',
 
   // Cloud 관련 에러
+  CREATE_CLOUD_FAILED = 'CREATE_CLOUD_FAILED',
   CLOUD_NOT_FOUND = 'CLOUD_NOT_FOUND',
 
   //404 에러
