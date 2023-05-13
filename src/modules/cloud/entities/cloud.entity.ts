@@ -19,7 +19,7 @@ export class Cloud {
   })
   id!: number;
 
-  @Column({ type: 'varchar', length: 50, default: '미분류' })
+  @Column({ type: 'varchar', length: 50 })
   name!: string;
 
   @ManyToOne(() => User, (user) => user.clouds, {

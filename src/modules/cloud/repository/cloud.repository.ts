@@ -11,19 +11,18 @@ export class CloudRepository {
     private cloudRepository: Repository<Cloud>,
   ) {}
 
-  async createUncategorizedCloud(user: User, queryRunner: QueryRunner): Promise<Cloud> {
-    const cloud = new Cloud();
-    cloud.name = '미분류';
-    cloud.user = user;
-
-    return await queryRunner.manager.save(cloud);
-  }
-
   async findCloudByIdAndUser(id: number, userId: number): Promise<Cloud | null> {
     return this.cloudRepository
       .createQueryBuilder('cloud')
       .where('cloud.id = :id', { id })
       .andWhere('cloud.user = :userId', { userId: userId })
       .getOne();
+  }
+
+  async createCloud(name: string, user: User): Promise<Cloud> {
+    const cloud = new Cloud();
+    cloud.name = name;
+    cloud.user = user;
+    return await this.cloudRepository.save(cloud);
   }
 }

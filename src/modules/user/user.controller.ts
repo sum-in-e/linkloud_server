@@ -42,7 +42,6 @@ export class UserController {
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = await this.userService.createUser(body, queryRunner);
-    await this.cloudService.createDefaultCloudForUser(user, queryRunner);
     // TODO: 가이드용 링크 아이템 생성
 
     await this.authService.generateTokens(user.id, user.email, response);
@@ -94,7 +93,6 @@ export class UserController {
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = await this.userService.createUserByKakao(body, queryRunner);
-    await this.cloudService.createDefaultCloudForUser(user, queryRunner);
     // TODO: 가이드용 링크 아이템 생성
     await this.authService.generateTokens(user.id, user.email, response);
 

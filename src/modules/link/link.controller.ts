@@ -23,7 +23,7 @@ export class LinkController {
     const user = request.user;
     const link = await this.linkService.createLink(body, user);
     return {
-      cloudId: link.cloud.id,
+      cloudId: link.cloud ? link.cloud.id : null, // null이면 분류 안 된 링크
     };
   }
 }
