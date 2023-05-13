@@ -7,6 +7,7 @@ import { CreateLinkDto } from 'src/modules/link/dto/link.dto';
 import { Link } from 'src/modules/link/entities/link.entity';
 import { LinkRepository } from 'src/modules/link/repositories/link.repository';
 import { User } from 'src/modules/user/entities/user.entity';
+import { QueryRunner } from 'typeorm';
 
 @Injectable()
 export class LinkService {
@@ -28,6 +29,16 @@ export class LinkService {
 
     try {
       return await this.linkRepository.createLink(body, user, cloud);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
+        status: 500,
+      });
+    }
+  }
+
+  async createGuideLinks(user: User, queryRunner: QueryRunner): Promise<Link[]> {
+    try {
+      return await this.linkRepository.createGuideLinks(user, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
         status: 500,

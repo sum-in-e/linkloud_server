@@ -12,7 +12,7 @@ import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { AuthService } from 'src/core/auth/auth.service';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
-import { CloudService } from 'src/modules/cloud/cloud.service';
+import { LinkService } from 'src/modules/link/link.service';
 
 @ApiTags('유저 APIs')
 @Controller('user')
@@ -22,8 +22,8 @@ export class UserController {
 
   constructor(
     private readonly userService: UserService,
+    private readonly linkService: LinkService,
     private readonly authService: AuthService,
-    private readonly cloudService: CloudService,
     private readonly kakaoOauthService: KakaoOauthService,
     private readonly configService: ConfigService,
   ) {
@@ -42,9 +42,9 @@ export class UserController {
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = await this.userService.createUser(body, queryRunner);
-    // TODO: 가이드용 링크 아이템 생성
 
-    await this.authService.generateTokens(user.id, user.email, response);
+    await this.linkService.createGuideLinks(user, queryRunner); // 가이드용 링크 아이템 생성
+    await this.authService.generateTokens(user.id, user.email, response); // 토큰 생성
 
     return {
       email: user.email,
@@ -72,6 +72,7 @@ export class UserController {
     description: '카카오 서버로부터 유저 정보를 받아와 kakaoVerificationInfo에 저장합니다.',
   })
   @Get('signup/oauth-kakao')
+  @DisableSuccessInterceptor()
   @IsPublic()
   async kakaoOauthSignupCallback(@Query('code') code: string, @Res({ passthrough: true }) response: Response) {
     const { email, sub } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_SIGNUP_REDIRECT_URI);
@@ -96,8 +97,9 @@ export class UserController {
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = await this.userService.createUserByKakao(body, queryRunner);
-    // TODO: 가이드용 링크 아이템 생성
-    await this.authService.generateTokens(user.id, user.email, response);
+
+    await this.linkService.createGuideLinks(user, queryRunner); // 가이드용 링크 아이템 생성
+    await this.authService.generateTokens(user.id, user.email, response); // 토큰 생성
 
     return {
       email: user.email,
