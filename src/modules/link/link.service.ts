@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
+import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
 import { CloudRepository } from 'src/modules/cloud/repository/cloud.repository';
 import { CreateLinkDto } from 'src/modules/link/dto/link.dto';
 import { Link } from 'src/modules/link/entities/link.entity';
@@ -12,10 +13,17 @@ export class LinkService {
   constructor(private readonly linkRepository: LinkRepository, private readonly cloudRepository: CloudRepository) {}
 
   async createLink(body: CreateLinkDto, user: User): Promise<Link> {
-    const cloud = await this.cloudRepository.findCloudByIdAndUser(body.cloudId, user.id);
+    let cloud: Cloud | null = null;
 
-    if (!cloud) {
-      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
+    if (body.cloudId) {
+      // 클라우드 지정 했으면 클라우드 찾기
+      const findedCloud = await this.cloudRepository.findCloudByIdAndUser(body.cloudId, user.id);
+
+      if (!findedCloud) {
+        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
+      }
+
+      cloud = findedCloud;
     }
 
     try {

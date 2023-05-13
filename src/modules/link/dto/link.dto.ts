@@ -22,5 +22,6 @@ export class CreateLinkDto {
 
   @ApiProperty({ description: '클라우드 ID' })
   @IsNumber()
-  cloudId!: number;
+  @IsOptional()
+  cloudId!: number | null;
 }

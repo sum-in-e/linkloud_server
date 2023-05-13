@@ -13,7 +13,7 @@ export class LinkRepository {
     private linkRepository: Repository<Link>,
   ) {}
 
-  async createLink(body: CreateLinkDto, user: User, cloud: Cloud): Promise<Link> {
+  async createLink(body: CreateLinkDto, user: User, cloud: Cloud | null): Promise<Link> {
     const link = new Link();
     link.url = body.url;
     link.thumbnailUrl = body.thumbnailUrl;
