@@ -47,13 +47,13 @@ export class UserService {
       throw new CustomHttpException(ResponseCode.NOT_VERIFIED_EMAIL, '인증되지 않은 이메일입니다.');
     }
 
-    // 비밀번호 암호화
     const saltOrRounds = 10; // 암호화 강도
     const hashedPassword = await bcrypt.hash(body.password, saltOrRounds);
+
     try {
       return await this.userRepository.createUserByEmail(body, hashedPassword, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.');
+      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.', { status: 500 });
     }
   }
 
@@ -80,7 +80,7 @@ export class UserService {
         sub: result.sub,
       };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '서버 오류로 회원가입에 실패하였습니다.');
+      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.', { status: 500 });
     }
   }
 
@@ -89,18 +89,14 @@ export class UserService {
    */
   async createUserByKakao(body: KakaoSignUpDto, queryRunner: QueryRunner): Promise<User> {
     // sub로 kakaoVerificationInfoTable에 있는 유저 정보와 클라이언트에서 보낸 정보가 일치하는지 확인하여 유저 인증
-    const kakaoVerificationInfo = await this.kakaoVericationInfoRepository.findEmailBySub(body.sub, queryRunner);
+    const kakaoVerificationInfo = await this.kakaoVericationInfoRepository.findEmailBySub(body.sign, queryRunner);
 
     if (!kakaoVerificationInfo) {
-      throw new CustomHttpException(
-        ResponseCode.SIGN_UP_FAILED,
-        '인증 정보가 일치하지 않아 회원가입에 실패하였습니다.',
-      );
+      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.');
     }
 
     const user = await this.userRepository.findUserByEmailInTransaction(kakaoVerificationInfo.email, queryRunner);
 
-    // 계정 검증
     if (user) {
       await this.checkUserStatusByEmail(user);
 
@@ -109,20 +105,18 @@ export class UserService {
       });
     }
 
-    // 약관 동의 확인
     if (!body.isAgreeProvidePersonalInfo || !body.isAgreeTermsOfUse) {
       throw new CustomHttpException(ResponseCode.TERMS_NOT_AGREED, '필수 약관 동의가 필요합니다.');
     }
 
-    // 닉네임 유효성 검사
     if (body.name.length < 2 || body.name.length > 15) {
-      throw new CustomHttpException(ResponseCode.INVALID_NAME_FORMAT, '닉네임을 2~15자 이내로 설정해주세요.');
+      throw new CustomHttpException(ResponseCode.INVALID_USER_NAME_FORMAT, '닉네임을 2~15자 이내로 설정해주세요.');
     }
 
     try {
       return await this.userRepository.createUserByKakao(kakaoVerificationInfo.email, body.name, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.');
+      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.', { status: 500 });
     }
   }
 

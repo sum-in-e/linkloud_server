@@ -43,10 +43,11 @@ export class SignUpDto {
 
 export class KakaoSignUpDto {
   @ApiProperty({
-    description: 'sub(카카오 서버로부터 받은 id_token에 있는 sub -> 카카오 유저 아이디)',
+    description:
+      '이름은 sign인데 값은 sub(카카오 서버로부터 받은 id_token에 있는 sub -> 카카오 유저 아이디)이다. sub이라고 노출하면 안 될 것 같아서 sign으로 받음',
   })
   @IsString()
-  sub!: string;
+  sign!: string;
 
   @ApiProperty({
     description: '유저명(닉네임) - 2~15자',

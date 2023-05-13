@@ -23,6 +23,20 @@ export class AuthService {
     this.JWT_SECRET_KEY = this.configService.getOrThrow('JWT_SECRET_KEY');
     this.MODE = this.configService.getOrThrow('MODE');
   }
+
+  /**
+   * @description 유저가 존재하면 유저 객체를 반환하고, 존재하지 않으면 에러를 발생시키는 메서드
+   */
+  async findUserByEmail(email: string) {
+    // TODO: 나중에는 휴면계정도 예외 처리 해야하지 않을까
+    const user = await this.userRepository.findUserByEmailWithoutDeleted(email);
+
+    if (!user) {
+      throw new CustomHttpException(ResponseCode.USER_NOT_EXIST, '존재하지 않는 유저입니다.');
+    }
+    return user;
+  }
+
   async validateToken(request: Request, response: Response): Promise<any> {
     // 💡 토큰이 httponlycookie에 저장된 경우 브라우저에 의해 자동으로 Cookie 헤더에 첨부되어 보내진다. -> request.headers.cookie에서 찾을 수 있다.
     // 💡 이 경우 Authorization 헤더가 아닌 cookie 헤더를 확인하여 토큰을 추출하므로 클라이언트에서는 요청 시 Autorization 헤더를 보낼 필요가 없다.
@@ -77,17 +91,6 @@ export class AuthService {
     }
   }
 
-  // 유저가 존재하면 유저 객체를 반환하고, 존재하지 않으면 에러를 발생
-  async findUser(email: string) {
-    // TODO: 나중에는 휴면계정도 예외 처리 해야하지 않을까
-    const user = await this.userRepository.findUserByEmailWithoutDeleted(email);
-
-    if (!user) {
-      throw new CustomHttpException(ResponseCode.USER_NOT_FOUND, 'User not found');
-    }
-    return user;
-  }
-
   /**
    * @description JWT로 액세스토 큰과 리프레시 토큰 생성하고 응답 헤더에 저장하는 메서드
    */
@@ -107,7 +110,7 @@ export class AuthService {
       response.cookie('act', accessToken, cookieOptions);
       response.cookie('rft', refreshToken, cookieOptions);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.GENERATE_TOKEN_FAILED, `${error}`);
+      throw new CustomHttpException(ResponseCode.GENERATE_TOKEN_FAILED, `${error}`, { status: 500 });
     }
   }
 }

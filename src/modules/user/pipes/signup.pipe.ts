@@ -25,7 +25,7 @@ export class SignUpPipe implements PipeTransform {
       }
       if (error.property === 'name') {
         // 닉네임 형식에 맞지 않음
-        throw new CustomHttpException(ResponseCode.INVALID_NAME_FORMAT, '유저명은 2~15자 이내여야 합니다.');
+        throw new CustomHttpException(ResponseCode.INVALID_USER_NAME_FORMAT, '유저명은 2~15자 이내여야 합니다.');
       }
       if (error.property === 'isAgreeProvidePersonalInfo' || error.property === 'isAgreeTermsOfUse') {
         // 약관 동의 안 한 경우

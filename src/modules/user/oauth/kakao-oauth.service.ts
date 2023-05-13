@@ -38,7 +38,7 @@ export class KakaoOauthService {
           },
         }),
       );
-      const { access_token, id_token } = kakaoResonse.data;
+      const { id_token } = kakaoResonse.data;
 
       const { payloadJson } = await this.jwtUtil.decodeJWT(id_token);
       const { email, sub } = payloadJson; // 페이로드에서 사용자의 email을 가져온다
