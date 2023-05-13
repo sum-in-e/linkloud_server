@@ -40,7 +40,9 @@ export class EmailVerificationService {
 
       return { expiredAt: savedEmailVerificationData.expired_at };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.FAILED_TO_SEND_EMAIL, '인증번호 발송에 실패하였습니다.');
+      throw new CustomHttpException(ResponseCode.FAILED_TO_SEND_EMAIL, '인증번호 발송에 실패하였습니다.', {
+        status: 500,
+      });
     }
   }
 
@@ -48,19 +50,21 @@ export class EmailVerificationService {
     const emaiVerificationInfo = await this.emailVerificationRepository.findEmailVerification(email, verificationCode);
 
     if (!emaiVerificationInfo) {
-      throw new CustomHttpException(ResponseCode.NOT_FOUND_VERIFICATION_INFO);
+      throw new CustomHttpException(ResponseCode.VERIFICATION_INFO_NOT_EXITS, '인증번호를 다시 확인해 주세요.');
     }
 
     const isExpired = emaiVerificationInfo.expired_at < new Date();
     if (isExpired) {
-      throw new CustomHttpException(ResponseCode.EXPIRED_VERIFICATION_CODE);
+      throw new CustomHttpException(ResponseCode.EXPIRED_VERIFICATION_CODE, '인증번호가 만료되었습니다.');
     }
 
     try {
-      await this.emailVerificationRepository.updateIsVerified(emaiVerificationInfo);
-      return {};
+      const emailVerificationInfo = await this.emailVerificationRepository.updateIsVerified(emaiVerificationInfo);
+      return { email: emailVerificationInfo.email };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.FAILED_TO_CONFIRM_VERIFICATION_CODE);
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
+        status: 500,
+      });
     }
   }
 

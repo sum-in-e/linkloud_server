@@ -11,6 +11,7 @@ export class CloudController {
   async createCloud(@Body(ValidationPipe) body: CreateCloudDto, @Req() request: RequestWithUser) {
     const user = request.user;
     const cloud = await this.cloudService.createCloud(body, user);
+
     return { id: cloud.id, name: cloud.name };
   }
 }

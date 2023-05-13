@@ -70,7 +70,7 @@ export class LinkAnalyzeService {
         parser.end();
       });
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INVALID_URL);
+      throw new CustomHttpException(ResponseCode.INVALID_URL, `"${url}" is not a valid url`);
     }
   }
 }

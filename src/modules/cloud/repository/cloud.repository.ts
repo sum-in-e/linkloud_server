@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryRunner, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
 

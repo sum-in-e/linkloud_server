@@ -21,7 +21,9 @@ export class LinkService {
     try {
       return await this.linkRepository.createLink(body, user, cloud);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR);
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
+        status: 500,
+      });
     }
   }
 }

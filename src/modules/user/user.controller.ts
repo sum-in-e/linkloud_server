@@ -1,15 +1,15 @@
+import { QueryRunner } from 'typeorm';
 import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
 import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
 import { SignUpPipe } from 'src/modules/user/pipes/signup.pipe';
 import { KakaoOauthService } from 'src/modules/user/oauth/kakao-oauth.service';
 import { UserService } from 'src/modules/user/user.service';
-import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
 import { DisableSuccessInterceptor } from 'src/core/http/decorator/disable-success-interceptor.decorator';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { AuthService } from 'src/core/auth/auth.service';
-import { QueryRunner } from 'typeorm';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { CloudService } from 'src/modules/cloud/cloud.service';
@@ -73,10 +73,13 @@ export class UserController {
   })
   @Get('signup/oauth-kakao')
   @IsPublic()
-  async kakaoOauthSignupCallback(@Query('code') code: string) {
+  async kakaoOauthSignupCallback(@Query('code') code: string, @Res({ passthrough: true }) response: Response) {
     const { email, sub } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_SIGNUP_REDIRECT_URI);
 
-    return await this.userService.createKakaoVerificationInfo(email, sub); // 회원 가입 완료를 위해서는 클라이언트로부터 닉네임 입력과 약관 동의를 받아야하므로 회원가입 완료 API를 분리함
+    await this.userService.createKakaoVerificationInfo(email, sub); // 회원 가입 완료를 위해서는 클라이언트로부터 닉네임 입력과 약관 동의를 받아야하므로 회원가입 완료 API를 분리함
+
+    // 닉네임, 약관 동의받는 페이지로 유저 리다이렉트
+    response.redirect(`https://linkloud.co.kr/signup/oauth?sign=${sub}`);
   }
 
   @ApiOperation({
@@ -111,17 +114,13 @@ export class UserController {
   @DisableSuccessInterceptor()
   @IsPublic()
   async kakaoOauthLoginCallback(@Query('code') code: string, @Res({ passthrough: true }) response: Response) {
-    const { email, sub } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_LOGIN_REDIRECT_URI);
+    const { email } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_LOGIN_REDIRECT_URI);
 
     const user = await this.userService.verifyKakaoUser(email);
 
     await this.authService.generateTokens(user.id, user.email, response);
 
-    // 클라이언트로 리다이렉트
-    // TODO: 회원가입 완료 페이지로 유저 리다이렉트 시키기
-    // TODO: 클라이언트는 아래 페이지 리다이렉트 시 유저 정보를 조회하는 요청을 보내고 성공 응답 받으면
-    // TODO: 유저 정보를 로컬스토리지 등에 저장하고 로그인된 상태의 UI를 보여준다.
-    response.redirect(`https://linkloud.co.kr?email=${user.email}&method=${user.method}`);
+    response.redirect(`https://linkloud.co.kr`); // 로그인 되면 linkloud.co.kr이 마이 클라우드 페이지가 될 것이니 여기로 보내면 됌
   }
 
   @ApiOperation({ summary: '로그아웃' })
