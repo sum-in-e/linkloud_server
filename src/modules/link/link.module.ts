@@ -12,5 +12,6 @@ import { LinkRepository } from 'src/modules/link/repositories/link.repository';
   imports: [TypeOrmModule.forFeature([Link]), forwardRef(() => UserModule), forwardRef(() => CloudModule)],
   controllers: [LinkController],
   providers: [LinkService, LinkAnalyzeService, LinkRepository],
+  exports: [LinkService],
 })
 export class LinkModule {}
