@@ -49,7 +49,7 @@ export class Link {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  cloud!: Cloud;
+  cloud!: Cloud | null;
 
   @ManyToOne(() => User, (user) => user.links, {
     onDelete: 'CASCADE',
