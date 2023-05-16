@@ -31,7 +31,7 @@ export class UserController {
     this.KAKAO_LOGIN_REDIRECT_URI = this.configService.getOrThrow('KAKAO_LOGIN_REDIRECT_URI');
   }
 
-  @ApiOperation({ summary: '이메일 회원가입 ' })
+  @ApiOperation({ summary: '이메일 회원가입' })
   @Post('signup')
   @UsePipes(SignUpPipe)
   @UseInterceptors(TransactionInterceptor)
