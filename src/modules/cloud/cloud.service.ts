@@ -27,4 +27,12 @@ export class CloudService {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 생성 실패', { status: 500 });
     }
   }
+
+  async getClouds(user: User): Promise<Pick<Cloud, 'id' | 'name'>[]> {
+    try {
+      return await this.cloudRepository.getClouds(user);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 조회 실패', { status: 500 });
+    }
+  }
 }

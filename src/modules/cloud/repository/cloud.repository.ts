@@ -43,4 +43,16 @@ export class CloudRepository {
       .where('cloud.user = :userId', { userId: user.id })
       .getCount();
   }
+
+  /**
+   * @description 로그인한 유저가 소유한 클라우드를 position 기준으로 조회합니다. (position = 유저가 지정한 순서를 인식하기 위한 컬럼)
+   */
+  async getClouds(user: User): Promise<Cloud[]> {
+    return this.cloudRepository
+      .createQueryBuilder('cloud')
+      .select(['cloud.id', 'cloud.name']) // id, name 필드만 반환하도록 선택
+      .where('cloud.user = :userId', { userId: user.id })
+      .orderBy('cloud.position', 'ASC')
+      .getMany();
+  }
 }

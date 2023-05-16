@@ -1,4 +1,4 @@
-import { Body, Controller, Post, ValidationPipe, Req, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, ValidationPipe, Req, UseInterceptors, Get } from '@nestjs/common';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
@@ -23,6 +23,17 @@ export class CloudController {
     return {
       id: cloud.id,
       name: cloud.name,
+    };
+  }
+
+  @Get('/list')
+  async getClouds(@Req() request: RequestWithUser) {
+    const user = request.user;
+    const clouds = await this.cloudService.getClouds(user);
+
+    return {
+      count: clouds.length,
+      clouds,
     };
   }
 }
