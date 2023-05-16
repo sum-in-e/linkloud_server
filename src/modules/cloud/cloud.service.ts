@@ -21,18 +21,41 @@ export class CloudService {
     }
 
     try {
-      await this.cloudRepository.incrementPositionOfUserClouds(user, queryRunner); // 유저가 가진 클라우드의 cloud.order에 전부 +1
+      if (userCloudCount > 0) {
+        await this.cloudRepository.incrementPositionOfUserClouds(user, queryRunner);
+      }
       return await this.cloudRepository.createCloud(body.name, user, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 생성 실패', { status: 500 });
     }
   }
 
-  async getClouds(user: User): Promise<Pick<Cloud, 'id' | 'name'>[]> {
+  async getClouds(user: User): Promise<Pick<Cloud, 'id' | 'name'>[] | []> {
     try {
       return await this.cloudRepository.getClouds(user);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 조회 실패', { status: 500 });
+    }
+  }
+
+  async updateCloudPosition(id: number, newPosition: number, user: User, queryRunner: QueryRunner): Promise<void> {
+    const cloud = await this.cloudRepository.findCloudByIdAndUserWithTransaction(id, user, queryRunner);
+
+    if (!cloud) {
+      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다');
+    }
+
+    const prevPosition = cloud.position;
+
+    if (prevPosition === newPosition) {
+      return; // 수정한 위치와 클라우드의 기존 위치가 동일하면 로직 종료
+    }
+
+    try {
+      await this.cloudRepository.updateCloudPosition(cloud, newPosition, queryRunner); // 선택한 클라우드의 위치를 수정
+      await this.cloudRepository.updateOtherCloudsPosition(prevPosition, newPosition, id, user, queryRunner); // 클라우드 위치 변경에 영향 받는 클라우드들의 Position 수정
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 순서 변경 실패', { status: 500 });
     }
   }
 }
