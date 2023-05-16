@@ -28,6 +28,9 @@ export class Cloud {
   })
   user!: User;
 
+  @Column({ type: 'int', default: 0 })
+  position!: number;
+
   @OneToMany(() => Link, (link) => link.cloud, {
     onDelete: 'SET NULL', // 클라우드에 있는 링크가 삭제되어도 클라우드는 제거되면 안 된다. NO ACTION은 존재하지 않는 링크를 참조하게 될 수 있기 때문에 null로 변하게 해야한다.
     onUpdate: 'CASCADE',

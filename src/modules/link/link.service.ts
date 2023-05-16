@@ -18,7 +18,7 @@ export class LinkService {
 
     if (body.cloudId) {
       // 클라우드 지정 했으면 클라우드 찾기
-      const findedCloud = await this.cloudRepository.findCloudByIdAndUser(body.cloudId, user.id);
+      const findedCloud = await this.cloudRepository.findCloudByIdAndUser(body.cloudId, user);
 
       if (!findedCloud) {
         throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);

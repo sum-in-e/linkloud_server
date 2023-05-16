@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
 
@@ -11,18 +11,29 @@ export class CloudRepository {
     private cloudRepository: Repository<Cloud>,
   ) {}
 
-  async findCloudByIdAndUser(id: number, userId: number): Promise<Cloud | null> {
+  async findCloudByIdAndUser(id: number, user: User): Promise<Cloud | null> {
     return this.cloudRepository
       .createQueryBuilder('cloud')
       .where('cloud.id = :id', { id })
-      .andWhere('cloud.user = :userId', { userId: userId })
+      .andWhere('cloud.userId = :userId', { userId: user.id })
       .getOne();
   }
 
-  async createCloud(name: string, user: User): Promise<Cloud> {
+  async createCloud(name: string, user: User, queryRunner: QueryRunner): Promise<Cloud> {
     const cloud = new Cloud();
     cloud.name = name;
     cloud.user = user;
-    return await this.cloudRepository.save(cloud);
+    return await queryRunner.manager.save(cloud);
+  }
+
+  async incrementPositionOfUserClouds(user: User, queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.manager
+      .createQueryBuilder()
+      .update(Cloud)
+      .set({
+        position: () => '`position` + 1',
+      })
+      .where('user = :userId', { userId: user.id })
+      .execute();
   }
 }
