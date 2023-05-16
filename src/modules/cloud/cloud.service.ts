@@ -39,6 +39,13 @@ export class CloudService {
   }
 
   async updateCloudPosition(id: number, newPosition: number, user: User, queryRunner: QueryRunner): Promise<void> {
+    if (!newPosition) {
+      throw new CustomHttpException(
+        ResponseCode.INVALID_NEW_POSITION,
+        '변경할 position이 올바르게 전달되지 않았습니다.',
+      );
+    }
+
     const cloud = await this.cloudRepository.findCloudByIdAndUserWithTransaction(id, user, queryRunner);
 
     if (!cloud) {
