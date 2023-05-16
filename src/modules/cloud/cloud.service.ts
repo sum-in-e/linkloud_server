@@ -11,6 +11,15 @@ import { QueryRunner } from 'typeorm';
 export class CloudService {
   constructor(private readonly cloudRepository: CloudRepository) {}
   async createCloud(body: CreateCloudDto, user: User, queryRunner: QueryRunner): Promise<Cloud> {
+    const userCloudCount = await this.cloudRepository.countUserClouds(user, queryRunner);
+
+    if (userCloudCount >= 20) {
+      throw new CustomHttpException(
+        ResponseCode.CREATE_CLOUD_MAXIMUM_20,
+        '클라우드는 유저당 20개 까지 생성 가능합니다',
+      );
+    }
+
     try {
       await this.cloudRepository.incrementPositionOfUserClouds(user, queryRunner); // 유저가 가진 클라우드의 cloud.order에 전부 +1
       return await this.cloudRepository.createCloud(body.name, user, queryRunner);

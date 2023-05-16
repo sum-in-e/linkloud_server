@@ -36,4 +36,11 @@ export class CloudRepository {
       .where('user = :userId', { userId: user.id })
       .execute();
   }
+
+  async countUserClouds(user: User, queryRunner: QueryRunner): Promise<number> {
+    return await queryRunner.manager
+      .createQueryBuilder(Cloud, 'cloud')
+      .where('cloud.user = :userId', { userId: user.id })
+      .getCount();
+  }
 }
