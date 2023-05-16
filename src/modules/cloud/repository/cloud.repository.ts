@@ -15,7 +15,7 @@ export class CloudRepository {
     return this.cloudRepository
       .createQueryBuilder('cloud')
       .where('cloud.id = :id', { id })
-      .andWhere('cloud.userId = :userId', { userId: user.id })
+      .andWhere('cloud.user = :userId', { userId: user.id })
       .getOne();
   }
 
@@ -50,7 +50,8 @@ export class CloudRepository {
   async getClouds(user: User): Promise<Cloud[]> {
     return this.cloudRepository
       .createQueryBuilder('cloud')
-      .select(['cloud.id', 'cloud.name']) // id, name 필드만 반환하도록 선택
+      .loadRelationCountAndMap('cloud.linkCount', 'cloud.links') // 클라우드에 연결된 링크의 개수를 로드하고, linkCount 속성에 매핑
+      .select(['cloud.id', 'cloud.name'])
       .where('cloud.user = :userId', { userId: user.id })
       .orderBy('cloud.position', 'ASC')
       .getMany();
