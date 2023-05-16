@@ -12,10 +12,13 @@ export class UserRepository {
     private userRepository: Repository<User>,
   ) {}
 
-  async findUserByEmailWithoutDeleted(email: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { email } });
+  async findUserByIdForAuthGuard(id: number): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { id } });
   }
 
+  /**
+   * @description 회원가입/로그인에서 이메일을 가진 유저를 조회하기 위해 사용합니다.
+   */
   async findUserByEmail(email: string): Promise<User | null> {
     return await this.userRepository.findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴 -> 회원가입, 로그인에서 써서 탈퇴 계정 안내하려고
   }
