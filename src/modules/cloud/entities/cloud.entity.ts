@@ -22,6 +22,9 @@ export class Cloud {
   @Column({ type: 'varchar', length: 50 })
   name!: string;
 
+  @Column({ type: 'int', default: 0 })
+  position!: number;
+
   @ManyToOne(() => User, (user) => user.clouds, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',

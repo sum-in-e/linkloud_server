@@ -1,6 +1,6 @@
 import { QueryRunner } from 'typeorm';
-import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors, Req } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
@@ -13,6 +13,7 @@ import { AuthService } from 'src/core/auth/auth.service';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { LinkService } from 'src/modules/link/link.service';
+import { RequestWithUser } from 'src/core/http/types/http-request.type';
 
 @ApiTags('유저 APIs')
 @Controller('user')
@@ -31,7 +32,20 @@ export class UserController {
     this.KAKAO_LOGIN_REDIRECT_URI = this.configService.getOrThrow('KAKAO_LOGIN_REDIRECT_URI');
   }
 
-  @ApiOperation({ summary: '이메일 회원가입 ' })
+  @ApiOperation({ summary: '로그인한 유저 조회' })
+  @Get('me')
+  async getMe(@Req() request: RequestWithUser) {
+    const user = request.user;
+
+    return {
+      id: user.id,
+      email: user.email,
+      method: user.method,
+      name: user.name,
+    };
+  }
+
+  @ApiOperation({ summary: '이메일 회원가입' })
   @Post('signup')
   @UsePipes(SignUpPipe)
   @UseInterceptors(TransactionInterceptor)

@@ -27,9 +27,9 @@ export class AuthService {
   /**
    * @description 유저가 존재하면 유저 객체를 반환하고, 존재하지 않으면 에러를 발생시키는 메서드
    */
-  async findUserByEmail(email: string) {
+  async findUserByIdForAuthGuard(id: number) {
     // TODO: 나중에는 휴면계정도 예외 처리 해야하지 않을까
-    const user = await this.userRepository.findUserByEmailWithoutDeleted(email);
+    const user = await this.userRepository.findUserByIdForAuthGuard(id);
 
     if (!user) {
       throw new CustomHttpException(ResponseCode.USER_NOT_EXIST, '존재하지 않는 유저입니다.');

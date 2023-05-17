@@ -1,4 +1,4 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCloudDto {
@@ -7,4 +7,11 @@ export class CreateCloudDto {
   @MaxLength(50)
   @MinLength(1)
   name!: string;
+}
+
+export class UpdateCloudPositionDto {
+  @ApiProperty({ description: '변경할 position' })
+  @IsNumber()
+  @IsNotEmpty()
+  newPosition!: number;
 }
