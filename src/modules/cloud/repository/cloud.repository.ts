@@ -93,7 +93,7 @@ export class CloudRepository {
     user: User,
     queryRunner: QueryRunner,
   ): Promise<void> {
-    // +1을 해야하는 경우 (클라우드가 더 높은 위치에서 더 낮은 위치로 이동하는 경우, 이전 위치와 새 위치 사이의 모든 클라우드들의 위치는 1씩 증가)
+    // +1을 해야하는 경우 (클라우드가 더 높은 position에서 더 낮은 position으로 이동하는 경우, prevPosition과 newPosition 사이의 모든 클라우드들의 위치는 1씩 증가)
     if (prevPosition > newPosition) {
       await queryRunner.manager
         .createQueryBuilder(Cloud, 'cloud')
@@ -106,7 +106,7 @@ export class CloudRepository {
         .execute();
     }
 
-    // -1을 해야하는 경우 (클라우드가 더 낮은 위치에서 더 높은 위치로 이동하는 경우, 이전 위치와 새 위치 사이의 모든 클라우드들의 위치는 1씩 감소)
+    // -1을 해야하는 경우 (클라우드가 더 낮은 position에서 더 높은 position으로 이동하는 경우, prevPosition과 newPosition 사이의 모든 클라우드들의 위치는 1씩 감소)
     if (prevPosition < newPosition) {
       await queryRunner.manager
         .createQueryBuilder(Cloud, 'cloud')
