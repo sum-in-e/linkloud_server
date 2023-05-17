@@ -10,8 +10,8 @@ import { QueryRunner } from 'typeorm';
 @Injectable()
 export class CloudService {
   constructor(private readonly cloudRepository: CloudRepository) {}
-  async createCloud(body: CloudNameDto, user: User, queryRunner: QueryRunner): Promise<Cloud> {
-    const userCloudCount = await this.cloudRepository.countUserClouds(user, queryRunner);
+  async createCloud(body: CloudNameDto, user: User): Promise<Cloud> {
+    const userCloudCount = await this.cloudRepository.countUserClouds(user);
 
     if (userCloudCount >= 20) {
       throw new CustomHttpException(
@@ -21,10 +21,8 @@ export class CloudService {
     }
 
     try {
-      if (userCloudCount > 0) {
-        await this.cloudRepository.incrementPositionOfUserClouds(user, queryRunner);
-      }
-      return await this.cloudRepository.createCloud(body.name, user, queryRunner);
+      const maxPositionCloud = await this.cloudRepository.findMaxPositionCloud(user);
+      return await this.cloudRepository.createCloud(body.name, user, maxPositionCloud);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 생성 실패', { status: 500 });
     }
@@ -52,10 +50,16 @@ export class CloudService {
       throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다');
     }
 
-    const prevPosition = cloud.position;
+    const userCloudCount = await this.cloudRepository.countUserClouds(user);
+    if (newPosition < 0 || newPosition >= userCloudCount) {
+      // 새위치가 음수로 오거나, 가지고 있는 클라우드의 수 이상으로 들어오면 position 사이에 공백이 생기면서 연속성이 깨지므로 이에 대한 예외 처리
+      throw new CustomHttpException(ResponseCode.INVALID_NEW_POSITION, '새로운 위치가 유효하지 않습니다');
+    }
 
+    const prevPosition = cloud.position;
     if (prevPosition === newPosition) {
-      return; // 수정한 위치와 클라우드의 기존 위치가 동일하면 로직 종료
+      // 수정한 위치와 클라우드의 기존 위치가 동일하면 로직 종료
+      return;
     }
 
     try {
@@ -80,15 +84,16 @@ export class CloudService {
     }
   }
 
-  async deleteCloud(id: number, user: User): Promise<void> {
-    const cloud = await this.cloudRepository.findCloudByIdAndUser(id, user);
+  async deleteCloud(id: number, user: User, queryRunner: QueryRunner): Promise<void> {
+    const cloud = await this.cloudRepository.findCloudByIdAndUserWithTransaction(id, user, queryRunner);
 
     if (!cloud) {
       throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다');
     }
 
     try {
-      await this.cloudRepository.deleteCloud(cloud);
+      const deletedCloud = await this.cloudRepository.deleteCloud(cloud, queryRunner);
+      await this.cloudRepository.updateCloudsPositionAfterDeletion(user, deletedCloud, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 제거 실패', { status: 500 });
     }

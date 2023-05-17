@@ -25,14 +25,9 @@ export class CloudController {
 
   @ApiOperation({ summary: '클라우드 생성' })
   @Post('')
-  @UseInterceptors(TransactionInterceptor)
-  async createCloud(
-    @Body(ValidationPipe) body: CloudNameDto,
-    @Req() request: RequestWithUser,
-    @TransactionManager() queryRunner: QueryRunner,
-  ) {
+  async createCloud(@Body(ValidationPipe) body: CloudNameDto, @Req() request: RequestWithUser) {
     const user = request.user;
-    const cloud = await this.cloudService.createCloud(body, user, queryRunner);
+    const cloud = await this.cloudService.createCloud(body, user);
 
     return {
       id: cloud.id,
@@ -85,9 +80,14 @@ export class CloudController {
 
   @ApiOperation({ summary: '클라우드 제거' })
   @Delete('/:id')
-  async deleteCloud(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+  @UseInterceptors(TransactionInterceptor)
+  async deleteCloud(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: RequestWithUser,
+    @TransactionManager() queryRunner: QueryRunner,
+  ) {
     const user = request.user;
-    await this.cloudService.deleteCloud(id, user);
+    await this.cloudService.deleteCloud(id, user, queryRunner);
 
     return {};
   }
