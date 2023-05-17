@@ -29,37 +29,35 @@ export class CloudRepository {
   }
 
   /**
-   * @description 클라우드를 생성합니다.
-   */
-  async createCloud(name: string, user: User, queryRunner: QueryRunner): Promise<Cloud> {
-    const cloud = new Cloud();
-    cloud.name = name;
-    cloud.user = user;
-    return await queryRunner.manager.save(cloud);
-  }
-
-  /**
-   * @description 클라우드 생성 시 유저가 소유한 다른 클라우드들의 position을 1씩 증가시킵니다.
-   */
-  async incrementPositionOfUserClouds(user: User, queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.manager
-      .createQueryBuilder(Cloud, 'cloud')
-      .update()
-      .set({
-        position: () => 'cloud.position + 1',
-      })
-      .where('cloud.user_id = :userId', { userId: user.id }) // 💡Update() 메서드 사용 시 where절에서 외래키 컬럼은 외래키 컬럼의 컬럼명을 적어줘야한다. 그래서 user_id를 지정한다.
-      .execute();
-  }
-
-  /**
    * @description 로그인한 유저가 소유한 클라우드의 개수를 조회합니다.
    */
-  async countUserClouds(user: User, queryRunner: QueryRunner): Promise<number> {
-    return await queryRunner.manager
-      .createQueryBuilder(Cloud, 'cloud')
+  async countUserClouds(user: User): Promise<number> {
+    return await this.cloudRepository
+      .createQueryBuilder('cloud')
       .where('cloud.user = :userId', { userId: user.id })
       .getCount();
+  }
+
+  /**
+   * @description 유저가 소유한 클라우드 중 position이 가장 큰 클라우드를 조회합니다
+   */
+  async findMaxPositionCloud(user: User): Promise<Cloud | null> {
+    return await this.cloudRepository
+      .createQueryBuilder('cloud')
+      .where('cloud.user = :userId', { userId: user.id })
+      .orderBy('cloud.position', 'DESC')
+      .getOne();
+  }
+
+  /**
+   * @description 클라우드를 생성합니다.
+   */
+  async createCloud(name: string, user: User, maxPositionCloud: Cloud | null): Promise<Cloud> {
+    const cloud = new Cloud();
+    cloud.position = maxPositionCloud !== null ? maxPositionCloud.position + 1 : 0;
+    cloud.name = name;
+    cloud.user = user;
+    return await this.cloudRepository.save(cloud);
   }
 
   /**
@@ -71,7 +69,7 @@ export class CloudRepository {
       .loadRelationCountAndMap('cloud.linkCount', 'cloud.links') // 클라우드에 연결된 링크의 개수를 로드하고, linkCount 속성에 매핑
       .select(['cloud.id', 'cloud.name', 'cloud.position'])
       .where('cloud.user = :userId', { userId: user.id })
-      .orderBy('cloud.position', 'ASC')
+      .orderBy('cloud.position', 'DESC')
       .getMany();
   }
 
@@ -85,6 +83,8 @@ export class CloudRepository {
 
   /**
    * @description [클라우드 순서 변경] 변경된 클라우드로 인해 position에 영향을 받는 클라우드들의 position을 업데이트합니다.
+   * 클라우드의 Position들이 연속적이라는 가정하에 만들어진 로직으로 position이 연속되지 않으면 사이드 이펙트가 발생할 수 있습니다.
+   * 따라서 클라우드 추가 및 삭제 메서드에서도 클라우드 position에 변화를 주어 position의 값이 연속적일 수 있도록 로직을 설정한 상태입니다.
    */
   async updateOtherCloudsPosition(
     prevPosition: number,
@@ -131,7 +131,20 @@ export class CloudRepository {
   /**
    * @description 클라우드를 제거합니다.
    */
-  async deleteCloud(cloud: Cloud): Promise<Cloud> {
-    return await this.cloudRepository.remove(cloud);
+  async deleteCloud(cloud: Cloud, queryRunner: QueryRunner): Promise<Cloud> {
+    return await queryRunner.manager.remove(cloud);
+  }
+
+  /**
+   * @description 제거된 클라우드의 Position보다 높은 position을 소유한 클라우드의 Position을 1씩 낮춥니다. (유저가 소유한 클라우드들의 Position 연속성을 유지하기 위함)
+   */
+  async updateCloudsPositionAfterDeletion(user: User, deletedCloud: Cloud, queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.manager
+      .createQueryBuilder(Cloud, 'cloud')
+      .update()
+      .set({ position: () => 'cloud.position - 1' })
+      .where('cloud.user_id = :userId', { userId: user.id })
+      .andWhere('cloud.position > :deletedPosition', { deletedPosition: deletedCloud.position })
+      .execute();
   }
 }
