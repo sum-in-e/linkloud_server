@@ -127,4 +127,11 @@ export class CloudRepository {
     cloud.name = body.name;
     return await this.cloudRepository.save(cloud);
   }
+
+  /**
+   * @description 클라우드를 제거합니다.
+   */
+  async deleteCloud(cloud: Cloud): Promise<Cloud> {
+    return await this.cloudRepository.remove(cloud);
+  }
 }

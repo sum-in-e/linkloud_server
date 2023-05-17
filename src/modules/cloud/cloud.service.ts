@@ -79,4 +79,18 @@ export class CloudService {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 수정 실패', { status: 500 });
     }
   }
+
+  async deleteCloud(id: number, user: User): Promise<void> {
+    const cloud = await this.cloudRepository.findCloudByIdAndUser(id, user);
+
+    if (!cloud) {
+      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다');
+    }
+
+    try {
+      await this.cloudRepository.deleteCloud(cloud);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 제거 실패', { status: 500 });
+    }
+  }
 }

@@ -9,6 +9,7 @@ import {
   Patch,
   Param,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
@@ -80,5 +81,14 @@ export class CloudController {
       id: cloud.id,
       name: cloud.name,
     };
+  }
+
+  @ApiOperation({ summary: '클라우드 제거' })
+  @Delete('/:id')
+  async deleteCloud(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+    const user = request.user;
+    await this.cloudService.deleteCloud(id, user);
+
+    return {};
   }
 }
