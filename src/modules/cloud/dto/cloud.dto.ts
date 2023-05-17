@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateCloudDto {
+export class CloudNameDto {
   @ApiProperty({ description: '클라우드 이름' })
   @IsString()
   @MaxLength(50)

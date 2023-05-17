@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
+import { CloudNameDto } from 'src/modules/cloud/dto/cloud.dto';
 
 @Injectable()
 export class CloudRepository {
@@ -52,7 +53,7 @@ export class CloudRepository {
   }
 
   /**
-   * @description 로그인한 유저가 소유한 클라우드를 position 기준으로 조회합니다. (position = 유저가 지정한 순서를 인식하기 위한 컬럼)
+   * @description 로그인한 유저가 소유한 클라우드의 개수를 조회합니다.
    */
   async countUserClouds(user: User, queryRunner: QueryRunner): Promise<number> {
     return await queryRunner.manager
@@ -117,5 +118,13 @@ export class CloudRepository {
         .andWhere('cloud.position > :prevPosition', { prevPosition: prevPosition })
         .execute();
     }
+  }
+
+  /**
+   * @description 클라우드를 수정합니다.
+   */
+  async updateCloud(body: CloudNameDto, cloud: Cloud): Promise<Cloud> {
+    cloud.name = body.name;
+    return await this.cloudRepository.save(cloud);
   }
 }

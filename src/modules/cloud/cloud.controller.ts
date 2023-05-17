@@ -15,7 +15,7 @@ import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 import { CloudService } from 'src/modules/cloud/cloud.service';
-import { CreateCloudDto, UpdateCloudPositionDto } from 'src/modules/cloud/dto/cloud.dto';
+import { CloudNameDto, UpdateCloudPositionDto } from 'src/modules/cloud/dto/cloud.dto';
 import { QueryRunner } from 'typeorm';
 @ApiTags('클라우드 APIs')
 @Controller('cloud')
@@ -26,7 +26,7 @@ export class CloudController {
   @Post('')
   @UseInterceptors(TransactionInterceptor)
   async createCloud(
-    @Body(ValidationPipe) body: CreateCloudDto,
+    @Body(ValidationPipe) body: CloudNameDto,
     @Req() request: RequestWithUser,
     @TransactionManager() queryRunner: QueryRunner,
   ) {
@@ -64,5 +64,21 @@ export class CloudController {
     await this.cloudService.updateCloudPosition(id, body.newPosition, user, queryRunner);
 
     return {};
+  }
+
+  @ApiOperation({ summary: '클라우드 수정' })
+  @Patch('/:id')
+  async updateCloud(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) body: CloudNameDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const user = request.user;
+    const cloud = await this.cloudService.updateCloud(id, body, user);
+
+    return {
+      id: cloud.id,
+      name: cloud.name,
+    };
   }
 }
