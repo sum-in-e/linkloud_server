@@ -50,4 +50,14 @@ export class LinkRepository {
       },
     });
   }
+
+  async findLinkByIdAndUser(id: number, user: User): Promise<Link | null> {
+    return await this.linkRepository.findOne({
+      where: {
+        id: id,
+        user: { id: user.id },
+      },
+      relations: ['cloud'],
+    });
+  }
 }

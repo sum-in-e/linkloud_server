@@ -55,4 +55,23 @@ export class LinkService {
       });
     }
   }
+
+  async getLinkDetail(id: number, user: User): Promise<Link> {
+    let findedLink: Link | null;
+
+    try {
+      findedLink = await this.linkRepository.findLinkByIdAndUser(id, user);
+    } catch (error) {
+      // DB와 통신하는 동안 발생하는 예외를 처리
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', {
+        status: 500,
+      });
+    }
+
+    if (!findedLink) {
+      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
+    }
+
+    return findedLink;
+  }
 }
