@@ -1,11 +1,27 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, Req, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseInterceptors,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
+import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
-import { CreateLinkDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
+import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
+import { CreateLinkDto, DeleteLinksDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
 import { LinkAnalyzeService } from 'src/modules/link/link-analyze.service';
 import { LinkService } from 'src/modules/link/link.service';
 import { UpdateLinkPipe } from 'src/modules/link/pipes/update-link.pipe';
+import { QueryRunner } from 'typeorm';
 
 @ApiTags('링크 APIs')
 @Controller('link')
@@ -97,5 +113,14 @@ export class LinkController {
     };
 
     return response;
+  }
+
+  @ApiOperation({ summary: '링크 제거' })
+  @Delete(':id')
+  async deleteLink(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+    const user = request.user;
+    await this.linkService.deleteLinkById(id, user);
+
+    return {};
   }
 }

@@ -71,4 +71,8 @@ export class LinkRepository {
 
     return await this.linkRepository.save(link);
   }
+
+  async deleteLinkById(link: Link): Promise<Link> {
+    return await this.linkRepository.remove(link);
+  }
 }
