@@ -106,4 +106,14 @@ export class LinkService {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '수정 실패', { status: 500 });
     }
   }
+
+  async deleteLinkById(id: number, user: User): Promise<Link> {
+    const findedLink = await this.getLinkDetail(id, user);
+
+    try {
+      return await this.linkRepository.deleteLinkById(findedLink);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
+    }
+  }
 }
