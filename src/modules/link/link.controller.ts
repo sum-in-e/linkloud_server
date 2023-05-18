@@ -29,4 +29,15 @@ export class LinkController {
       cloudId: link.cloud ? link.cloud.id : null, // null이면 분류 안 된 링크
     };
   }
+
+  @ApiOperation({ summary: '내 컬렉션에 등록된 링크 개수 조회' })
+  @Get('/count/my-collection')
+  async getLinkCountInMyCollection(@Req() request: RequestWithUser) {
+    const user = request.user;
+    const count = await this.linkService.getLinkCountInMyCollection(user);
+
+    return {
+      count,
+    };
+  }
 }

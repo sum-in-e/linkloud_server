@@ -11,7 +11,7 @@ import { guideLinks } from 'src/modules/link/constants/guide-links.constant';
 export class LinkRepository {
   constructor(
     @InjectRepository(Link)
-    private linkRepository: Repository<Link>,
+    private readonly linkRepository: Repository<Link>,
   ) {}
 
   async createLink(body: CreateLinkDto, user: User, cloud: Cloud | null): Promise<Link> {
@@ -40,5 +40,14 @@ export class LinkRepository {
     });
 
     return await queryRunner.manager.save(links); // save 메소드는 단일 엔티티 또는 엔티티 배열을 인자로 받아 저장할 수 있다.
+  }
+
+  async countLinksInMyCollection(user: User): Promise<number> {
+    return await this.linkRepository.count({
+      where: {
+        user: { id: user.id },
+        isInMyCollection: true,
+      },
+    });
   }
 }

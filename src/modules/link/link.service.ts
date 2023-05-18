@@ -45,4 +45,14 @@ export class LinkService {
       });
     }
   }
+
+  async getLinkCountInMyCollection(user: User): Promise<number> {
+    try {
+      return await this.linkRepository.countLinksInMyCollection(user);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', {
+        status: 500,
+      });
+    }
+  }
 }
