@@ -4,7 +4,7 @@ import { QueryRunner, Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
 import { Link } from 'src/modules/link/entities/link.entity';
-import { CreateLinkDto } from 'src/modules/link/dto/link.dto';
+import { CreateLinkDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
 import { guideLinks } from 'src/modules/link/constants/guide-links.constant';
 
 @Injectable()
@@ -59,5 +59,16 @@ export class LinkRepository {
       },
       relations: ['cloud'],
     });
+  }
+
+  async updateLink(body: UpdateLinkDto, link: Link, cloud: Cloud | null): Promise<Link> {
+    link.url = body.url || link.url;
+    link.title = body.title || link.title;
+    link.description = body.description !== undefined ? body.description : link.description; // 내용 지우고 저장해서 빈문자열 보낼 수 있음
+    link.memo = body.memo !== undefined ? body.memo : link.memo; // 매모 지우고 저장해서 빈문자열 보낼 수 있음
+    link.isInMyCollection = body.isInMyCollection !== undefined ? body.isInMyCollection : link.isInMyCollection; // false들어오면 에러 날 수 있어서 삼항 씀
+    link.cloud = body.cloudId !== undefined ? cloud : link.cloud;
+
+    return await this.linkRepository.save(link);
   }
 }
