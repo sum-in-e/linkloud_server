@@ -4,6 +4,8 @@ export enum ResponseCode {
 
   // -------------------- 에러 응답 코드 --------------------
 
+  INVALID_PARAMS = 'INVALID_PARAMS',
+
   // SignUp & Login
   NOT_VERIFIED_EMAIL = 'NOT_VERIFIED_EMAIL', // 인증되지 않은 이메일
   EMAIL_ALREADY_EXIST = 'EMAIL_ALREADY_EXIST', // 이미 가입된 이메일
@@ -39,6 +41,7 @@ export enum ResponseCode {
   // Link
   INVALID_URL = 'INVALID_URL',
   LINK_NOT_FOUND = 'LINK_NOT_FOUND',
+  LINK_TITLE_IS_REQUIRED = 'LINK_TITLE_IS_REQUIRED',
 
   // Cloud
   INVALID_NEW_POSITION = 'INVALID_NEW_POSITION',

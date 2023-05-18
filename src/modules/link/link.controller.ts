@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Req, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, Req, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
-import { CreateLinkDto } from 'src/modules/link/dto/link.dto';
+import { CreateLinkDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
 import { LinkAnalyzeService } from 'src/modules/link/link-analyze.service';
 import { LinkService } from 'src/modules/link/link.service';
+import { UpdateLinkPipe } from 'src/modules/link/pipes/update-link.pipe';
 
 @ApiTags('링크 APIs')
 @Controller('link')
@@ -60,6 +61,37 @@ export class LinkController {
         ? {
             id: link.cloud.id,
             name: link.cloud.name,
+          }
+        : null,
+    };
+
+    return response;
+  }
+
+  @ApiOperation({ summary: '링크 정보 수정' })
+  @Patch(':id')
+  async updateLink(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(UpdateLinkPipe) body: UpdateLinkDto,
+    @Req() request: RequestWithUser,
+  ) {
+    const user = request.user;
+
+    const updatedLink = await this.linkService.updateLink(id, body, user);
+
+    const response = {
+      id: updatedLink.id,
+      url: updatedLink.url,
+      thumbnailUrl: updatedLink.thumbnailUrl,
+      title: updatedLink.title,
+      description: updatedLink.description,
+      memo: updatedLink.memo,
+      isInMyCollection: updatedLink.isInMyCollection,
+      createdAt: updatedLink.createdAt,
+      cloud: updatedLink.cloud
+        ? {
+            id: updatedLink.cloud.id,
+            name: updatedLink.cloud.name,
           }
         : null,
     };
