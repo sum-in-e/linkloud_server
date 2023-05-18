@@ -38,6 +38,7 @@ export enum ResponseCode {
 
   // Link
   INVALID_URL = 'INVALID_URL',
+  LINK_NOT_FOUND = 'LINK_NOT_FOUND',
 
   // Cloud
   INVALID_NEW_POSITION = 'INVALID_NEW_POSITION',

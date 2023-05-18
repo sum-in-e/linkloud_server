@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Req, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
@@ -31,7 +31,7 @@ export class LinkController {
   }
 
   @ApiOperation({ summary: '내 컬렉션에 등록된 링크 개수 조회' })
-  @Get('/count/my-collection')
+  @Get('count/my-collection')
   async getLinkCountInMyCollection(@Req() request: RequestWithUser) {
     const user = request.user;
     const count = await this.linkService.getLinkCountInMyCollection(user);
@@ -39,5 +39,31 @@ export class LinkController {
     return {
       count,
     };
+  }
+
+  @ApiOperation({ summary: '링크 상세 정보 조회' })
+  @Get(':id')
+  async getLinkDetail(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+    const user = request.user;
+    const link = await this.linkService.getLinkDetail(id, user);
+
+    const response = {
+      id: link.id,
+      url: link.url,
+      thumbnailUrl: link.thumbnailUrl,
+      title: link.title,
+      description: link.description,
+      memo: link.memo,
+      isInMyCollection: link.isInMyCollection,
+      createdAt: link.createdAt,
+      cloud: link.cloud
+        ? {
+            id: link.cloud.id,
+            name: link.cloud.name,
+          }
+        : null,
+    };
+
+    return response;
   }
 }
