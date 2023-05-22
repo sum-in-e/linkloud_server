@@ -17,7 +17,7 @@ import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
-import { CreateLinkDto, DeleteLinksDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
+import { CreateLinkDto, DeleteLinksDto, UpdateLinkDto, UpdateLinksCloudDto } from 'src/modules/link/dto/link.dto';
 import { LinkAnalyzeService } from 'src/modules/link/link-analyze.service';
 import { LinkService } from 'src/modules/link/link.service';
 import { UpdateLinkPipe } from 'src/modules/link/pipes/update-link.pipe';
@@ -84,6 +84,33 @@ export class LinkController {
     return response;
   }
 
+  @ApiOperation({ summary: '선택한 링크의 클라우드 일괄 이동' })
+  @Patch('ids/cloud')
+  @UseInterceptors(TransactionInterceptor)
+  async updateLinksCloud(
+    @Body(ValidationPipe) body: UpdateLinksCloudDto,
+    @Req() request: RequestWithUser,
+    @TransactionManager() queryRunner: QueryRunner,
+  ) {
+    const user = request.user;
+    await this.linkService.updateLinksCloud(body.linkIds, body.cloudId, user, queryRunner);
+    return {};
+  }
+
+  @ApiOperation({ summary: '선택한 링크 일괄 제거' })
+  @Delete('ids/delete')
+  @UseInterceptors(TransactionInterceptor)
+  async deleteLinks(
+    @Body(ValidationPipe) body: DeleteLinksDto,
+    @Req() request: RequestWithUser,
+    @TransactionManager() queryRunner: QueryRunner,
+  ) {
+    const user = request.user;
+    await this.linkService.deleteLinks(body.linkIds, user, queryRunner);
+
+    return {};
+  }
+
   @ApiOperation({ summary: '링크 정보 수정' })
   @Patch(':id')
   async updateLink(
@@ -119,22 +146,8 @@ export class LinkController {
   @Delete(':id')
   async deleteLink(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
     const user = request.user;
+
     await this.linkService.deleteLinkById(id, user);
-
-    return {};
-  }
-
-  @ApiOperation({ summary: '선택한 링크 일괄 제거' })
-  @Delete('ids/delete')
-  @UseInterceptors(TransactionInterceptor)
-  async deleteLinks(
-    @Body(ValidationPipe) body: DeleteLinksDto,
-    @Req() request: RequestWithUser,
-    @TransactionManager() queryRunner: QueryRunner,
-  ) {
-    const user = request.user;
-
-    await this.linkService.deleteLinks(body.linkIds, user, queryRunner);
 
     return {};
   }

@@ -13,22 +13,9 @@ import { QueryRunner } from 'typeorm';
 export class LinkService {
   constructor(private readonly linkRepository: LinkRepository, private readonly cloudRepository: CloudRepository) {}
 
-  async createLink(body: CreateLinkDto, user: User): Promise<Link> {
-    let cloud: Cloud | null = null;
-
-    if (body.cloudId) {
-      // 클라우드 지정 했으면 클라우드 찾기
-      const findedCloud = await this.cloudRepository.findCloudByIdAndUser(body.cloudId, user);
-
-      if (!findedCloud) {
-        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
-      }
-
-      cloud = findedCloud;
-    }
-
+  async createGuideLinks(user: User, queryRunner: QueryRunner): Promise<Link[]> {
     try {
-      return await this.linkRepository.createLink(body, user, cloud);
+      return await this.linkRepository.createGuideLinks(user, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
         status: 500,
@@ -36,9 +23,11 @@ export class LinkService {
     }
   }
 
-  async createGuideLinks(user: User, queryRunner: QueryRunner): Promise<Link[]> {
+  async createLink(body: CreateLinkDto, user: User): Promise<Link> {
+    const cloud = await this.validateCloudId(body.cloudId, user);
+
     try {
-      return await this.linkRepository.createGuideLinks(user, queryRunner);
+      return await this.linkRepository.createLink(body, user, cloud);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
         status: 500,
@@ -57,94 +46,148 @@ export class LinkService {
   }
 
   async getLinkDetail(id: number, user: User): Promise<Link> {
-    let findedLink: Link | null;
+    let foundLink: Link | null;
 
     try {
-      findedLink = await this.linkRepository.findLinkByIdAndUser(id, user);
+      foundLink = await this.linkRepository.findLinkByIdAndUser(id, user);
     } catch (error) {
-      // DB와 통신하는 동안 발생하는 예외를 처리
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', {
         status: 500,
       });
     }
 
-    if (!findedLink) {
+    if (!foundLink) {
       throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
     }
 
-    return findedLink;
+    return foundLink;
   }
 
   async updateLink(id: number, body: UpdateLinkDto, user: User): Promise<Link> {
-    let findedLink: Link | null;
-
-    try {
-      findedLink = await this.linkRepository.findLinkByIdAndUser(id, user);
-    } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
-    }
-
-    if (!findedLink) {
-      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
-    }
+    const foundLink = await this.getLinkDetail(id, user);
 
     let cloud: Cloud | null = null;
 
-    if (body.cloudId) {
-      const findedCloud = await this.cloudRepository.findCloudByIdAndUser(body.cloudId, user);
-
-      if (!findedCloud) {
-        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
-      }
-
-      cloud = findedCloud;
+    if (body.cloudId !== undefined) {
+      // cloudId를 클라이언트에서 넘겼을 때만 cloud 찾는 로직 실행
+      cloud = await this.validateCloudId(body.cloudId, user);
     }
 
     try {
-      return await this.linkRepository.updateLink(body, findedLink, cloud);
+      return await this.linkRepository.updateLink(body, foundLink, cloud);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '수정 실패', { status: 500 });
     }
   }
 
   async deleteLinkById(id: number, user: User): Promise<Link> {
-    const findedLink = await this.getLinkDetail(id, user);
+    const foundLink = await this.getLinkDetail(id, user);
 
     try {
-      return await this.linkRepository.deleteLinkById(findedLink);
+      return await this.linkRepository.deleteLinkById(foundLink);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
     }
   }
 
+  /**
+   * @description linkIds에 해당하는 링크들의 클라우드를 cloudId에 해당하는 클라우드로 일괄 변경
+   */
+  async updateLinksCloud(
+    linkIds: number[],
+    cloudId: number | null,
+    user: User,
+    queryRunner: QueryRunner,
+  ): Promise<Link[]> {
+    if (cloudId === undefined) {
+      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, 'cloudId가 누락되었습니다.');
+    }
+
+    const foundLinks = await this.validateLinkIds(linkIds, user, queryRunner);
+
+    let cloud: Cloud | null = null;
+
+    if (cloudId) {
+      try {
+        cloud = await this.cloudRepository.findCloudByIdAndUserWithTransaction(cloudId, user, queryRunner);
+      } catch (error) {
+        throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
+      }
+
+      if (!cloud) {
+        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
+      }
+    }
+
+    try {
+      return await this.linkRepository.updateLinksCloud(foundLinks, cloud, queryRunner);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '이동 실패', { status: 500 });
+    }
+  }
+
+  /**
+   * @description linkIds에 해당하는 링크들을 일괄 제거
+   */
   async deleteLinks(linkIds: number[], user: User, queryRunner: QueryRunner): Promise<Link[]> {
+    const foundLinks = await this.validateLinkIds(linkIds, user, queryRunner);
+
+    try {
+      return await this.linkRepository.deleteLinks(foundLinks, queryRunner);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
+    }
+  }
+
+  /**
+   * @description linkIds 배열과 linkIds에 해당하는 링크들을 검증
+   */
+  private async validateLinkIds(linkIds: number[], user: User, queryRunner: QueryRunner): Promise<Link[]> {
     if (!linkIds || !linkIds.length) {
-      // linkIds 배열에 값이 없는 경우
       throw new CustomHttpException(ResponseCode.INVALID_PARAMS, '링크가 전달되지 않았습니다.');
     }
 
     if (new Set(linkIds).size !== linkIds.length) {
-      // linkIds 배열에 중복된 값이 있는지 확인
       throw new CustomHttpException(ResponseCode.INVALID_PARAMS, '중복된 링크가 존재합니다.');
     }
 
-    let findedLinks: Link[] | [];
+    let foundLinks: Link[] | [];
 
     try {
-      findedLinks = await this.linkRepository.findLinksByIdAndUser(linkIds, user, queryRunner);
+      foundLinks = await this.linkRepository.findLinksByIdAndUser(linkIds, user, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
     }
 
-    if (findedLinks.length !== linkIds.length) {
-      // 조회된 링크들의 개수와 요청된 링크들의 개수가 일치하는지 확인
+    if (foundLinks.length !== linkIds.length) {
       throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
     }
 
-    try {
-      return await this.linkRepository.deleteLinks(findedLinks, queryRunner);
-    } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
+    return foundLinks;
+  }
+
+  /**
+   * @description cloudId에 해당하는 클라우드가 있는지 검증
+   */
+  private async validateCloudId(cloudId: number | null, user: User): Promise<Cloud | null> {
+    let cloud: Cloud | null = null;
+
+    if (cloudId === undefined) {
+      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, 'cloudId가 누락되었습니다.');
     }
+
+    if (cloudId) {
+      try {
+        cloud = await this.cloudRepository.findCloudByIdAndUser(cloudId, user);
+      } catch (error) {
+        throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
+      }
+
+      if (!cloud) {
+        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
+      }
+    }
+
+    return cloud;
   }
 }

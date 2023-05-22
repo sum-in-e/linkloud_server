@@ -72,6 +72,13 @@ export class LinkRepository {
     return await this.linkRepository.save(link);
   }
 
+  async updateLinksCloud(links: Link[], cloud: Cloud | null, queryRunner: QueryRunner): Promise<Link[]> {
+    links.forEach((link) => {
+      link.cloud = cloud;
+    });
+    return await queryRunner.manager.save(links);
+  }
+
   async deleteLinkById(link: Link): Promise<Link> {
     return await this.linkRepository.remove(link);
   }
