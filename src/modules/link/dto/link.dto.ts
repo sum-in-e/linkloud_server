@@ -1,4 +1,4 @@
-import { IsString, IsUrl, IsNumber, MinLength, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsUrl, IsNumber, MinLength, IsOptional, IsBoolean, IsArray, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLinkDto {
@@ -57,4 +57,10 @@ export class UpdateLinkDto {
   @IsNumber()
   @IsOptional()
   cloudId!: number | null;
+}
+
+export class DeleteLinksDto {
+  @IsArray()
+  @IsNumber({}, { each: true })
+  linkIds!: number[];
 }

@@ -116,4 +116,35 @@ export class LinkService {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
     }
   }
+
+  async deleteLinks(linkIds: number[], user: User, queryRunner: QueryRunner): Promise<Link[]> {
+    if (!linkIds || !linkIds.length) {
+      // linkIds 배열에 값이 없는 경우
+      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, '링크가 전달되지 않았습니다.');
+    }
+
+    if (new Set(linkIds).size !== linkIds.length) {
+      // linkIds 배열에 중복된 값이 있는지 확인
+      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, '중복된 링크가 존재합니다.');
+    }
+
+    let findedLinks: Link[] | [];
+
+    try {
+      findedLinks = await this.linkRepository.findLinksByIdAndUser(linkIds, user, queryRunner);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
+    }
+
+    if (findedLinks.length !== linkIds.length) {
+      // 조회된 링크들의 개수와 요청된 링크들의 개수가 일치하는지 확인
+      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
+    }
+
+    try {
+      return await this.linkRepository.deleteLinks(findedLinks, queryRunner);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
+    }
+  }
 }

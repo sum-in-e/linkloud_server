@@ -75,4 +75,16 @@ export class LinkRepository {
   async deleteLinkById(link: Link): Promise<Link> {
     return await this.linkRepository.remove(link);
   }
+
+  async findLinksByIdAndUser(linkIds: number[], user: User, queryRunner: QueryRunner): Promise<Link[]> {
+    return await queryRunner.manager
+      .createQueryBuilder(Link, 'link')
+      .where('link.id IN (:...linkIds)', { linkIds })
+      .andWhere('link.user.id = :userId', { userId: user.id })
+      .getMany();
+  }
+
+  async deleteLinks(findedLinks: Link[], queryRunner: QueryRunner): Promise<Link[]> {
+    return await queryRunner.manager.remove(findedLinks);
+  }
 }
