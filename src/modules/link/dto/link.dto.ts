@@ -1,4 +1,14 @@
-import { IsString, IsUrl, IsNumber, MinLength, IsOptional, IsBoolean, IsArray, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsUrl,
+  IsNumber,
+  MinLength,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  IsNotEmpty,
+  IsInt,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLinkDto {
@@ -54,13 +64,26 @@ export class UpdateLinkDto {
   isInMyCollection!: boolean;
 
   @ApiProperty({ description: '클라우드 ID' })
-  @IsNumber()
+  @IsInt()
   @IsOptional()
   cloudId!: number | null;
 }
 
 export class DeleteLinksDto {
   @IsArray()
-  @IsNumber({}, { each: true })
+  @IsNotEmpty({ each: true })
+  @IsInt({ each: true })
   linkIds!: number[];
+}
+
+export class UpdateLinksCloudDto {
+  @IsArray()
+  @IsNotEmpty({ each: true })
+  @IsInt({ each: true })
+  linkIds!: number[];
+
+  @IsNotEmpty()
+  @IsInt()
+  @IsOptional()
+  cloudId!: number | null;
 }
