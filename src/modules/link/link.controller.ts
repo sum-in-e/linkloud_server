@@ -123,4 +123,19 @@ export class LinkController {
 
     return {};
   }
+
+  @ApiOperation({ summary: '선택한 링크 일괄 제거' })
+  @Delete('ids/delete')
+  @UseInterceptors(TransactionInterceptor)
+  async deleteLinks(
+    @Body(ValidationPipe) body: DeleteLinksDto,
+    @Req() request: RequestWithUser,
+    @TransactionManager() queryRunner: QueryRunner,
+  ) {
+    const user = request.user;
+
+    await this.linkService.deleteLinks(body.linkIds, user, queryRunner);
+
+    return {};
+  }
 }
