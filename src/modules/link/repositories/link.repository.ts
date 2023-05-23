@@ -61,6 +61,12 @@ export class LinkRepository {
     });
   }
 
+  async updateLinkRead(link: Link): Promise<Link> {
+    link.isRead = true;
+    link.readAt = new Date();
+    return await this.linkRepository.save(link);
+  }
+
   async updateLink(body: UpdateLinkDto, link: Link, cloud: Cloud | null): Promise<Link> {
     link.url = body.url || link.url;
     link.title = body.title || link.title;

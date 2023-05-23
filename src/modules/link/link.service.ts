@@ -57,10 +57,27 @@ export class LinkService {
     }
 
     if (!foundLink) {
-      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
+      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND, ResponseCode.LINK_NOT_FOUND, { status: 404 });
     }
 
     return foundLink;
+  }
+
+  async updateLinkRead(id: number, user: User): Promise<Link> {
+    const foundLink = await this.getLinkDetail(id, user);
+
+    if (foundLink.isRead === true) {
+      // 이미 열람 처리된 링크일 경우 DB 업데이트 로직을 실행하지 않고 종료
+      return foundLink;
+    }
+
+    try {
+      return await this.linkRepository.updateLinkRead(foundLink);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '열람 처리 실패', {
+        status: 500,
+      });
+    }
   }
 
   async updateLink(id: number, body: UpdateLinkDto, user: User): Promise<Link> {

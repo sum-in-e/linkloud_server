@@ -37,6 +37,12 @@ export class Link {
   @Column({ default: false })
   isInMyCollection!: boolean;
 
+  @Column({ default: false })
+  isRead!: boolean;
+
+  @Column({ type: 'datetime', nullable: true })
+  readAt!: Date | null;
+
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 

@@ -72,6 +72,7 @@ export class LinkController {
       description: link.description,
       memo: link.memo,
       isInMyCollection: link.isInMyCollection,
+      isRead: link.isRead,
       createdAt: link.createdAt,
       cloud: link.cloud
         ? {
@@ -82,6 +83,14 @@ export class LinkController {
     };
 
     return response;
+  }
+
+  @ApiOperation({ summary: '선택한 링크 열람 처리' })
+  @Patch(':id/read')
+  async updateLinkRead(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+    const user = request.user;
+    await this.linkService.updateLinkRead(id, user);
+    return {};
   }
 
   @ApiOperation({ summary: '선택한 링크의 클라우드 일괄 이동' })
@@ -130,6 +139,7 @@ export class LinkController {
       description: updatedLink.description,
       memo: updatedLink.memo,
       isInMyCollection: updatedLink.isInMyCollection,
+      isRead: updatedLink.isRead,
       createdAt: updatedLink.createdAt,
       cloud: updatedLink.cloud
         ? {
