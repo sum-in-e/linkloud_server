@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
@@ -12,12 +13,13 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 import { CreateLinkDto, DeleteLinksDto, UpdateLinkDto, UpdateLinksCloudDto } from 'src/modules/link/dto/link.dto';
+import { Link } from 'src/modules/link/entities/link.entity';
 import { LinkAnalyzeService } from 'src/modules/link/link-analyze.service';
 import { LinkService } from 'src/modules/link/link.service';
 import { UpdateLinkPipe } from 'src/modules/link/pipes/update-link.pipe';
@@ -58,6 +60,87 @@ export class LinkController {
     };
   }
 
+  @ApiOperation({
+    summary: '조건에 맞는 링크 조회',
+    description: 'limit, offset 외 아무 쿼리도 보내지 않으면 전체 조회',
+  })
+  @Get('list')
+  @ApiQuery({
+    name: 'isRead',
+    type: String,
+    description: '링크 열람 여부',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'myCollection',
+    type: String,
+    description: '내 컬렉션 저장 여부',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'cloudId',
+    type: String,
+    description: '클라우드 지정 - 클라우드 미지정의 경우 0, 클라우드별로 찾고싶은 경우 클라우드 아이디',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'sort',
+    description: '생성일 기준 정렬 순서 - DESC(기본값) | ASC',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: '한 페이지에 보여줄 링크 개수',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'offset',
+    type: Number,
+    description: '건너뛸 링크 개수',
+    required: true,
+  })
+  async getLinks(
+    @Query('isRead', new DefaultValuePipe(undefined)) isRead: string | undefined,
+    @Query('myCollection', new DefaultValuePipe(undefined)) myCollection: string | undefined,
+    @Query('cloudId', new DefaultValuePipe(undefined)) cloudId: string | undefined,
+    @Query('sort', new DefaultValuePipe('DESC')) sort: string,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
+    @Query('limit', new DefaultValuePipe(40), ParseIntPipe) limit: number,
+    @Req() request: RequestWithUser,
+  ) {
+    const user = request.user;
+    const { linkCount, links } = await this.linkService.getLinks(
+      isRead,
+      myCollection,
+      cloudId,
+      sort,
+      limit,
+      offset,
+      user,
+    );
+
+    return {
+      linkCount,
+      links: links.map((link) => ({
+        id: link.id,
+        url: link.url,
+        thumbnailUrl: link.thumbnailUrl,
+        title: link.title,
+        description: link.description,
+        memo: link.memo,
+        isInMyCollection: link.isInMyCollection,
+        isRead: link.isRead,
+        cloud: link.cloud
+          ? {
+              id: link.cloud.id,
+              name: link.cloud.name,
+            }
+          : null,
+      })),
+    };
+  }
+
   @ApiOperation({ summary: '링크 상세 정보 조회' })
   @Get(':id')
   async getLinkDetail(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
@@ -72,6 +155,7 @@ export class LinkController {
       description: link.description,
       memo: link.memo,
       isInMyCollection: link.isInMyCollection,
+      isRead: link.isRead,
       createdAt: link.createdAt,
       cloud: link.cloud
         ? {
@@ -82,6 +166,14 @@ export class LinkController {
     };
 
     return response;
+  }
+
+  @ApiOperation({ summary: '선택한 링크 열람 처리' })
+  @Patch(':id/read')
+  async updateLinkRead(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+    const user = request.user;
+    await this.linkService.updateLinkRead(id, user);
+    return {};
   }
 
   @ApiOperation({ summary: '선택한 링크의 클라우드 일괄 이동' })
@@ -130,6 +222,7 @@ export class LinkController {
       description: updatedLink.description,
       memo: updatedLink.memo,
       isInMyCollection: updatedLink.isInMyCollection,
+      isRead: updatedLink.isRead,
       createdAt: updatedLink.createdAt,
       cloud: updatedLink.cloud
         ? {

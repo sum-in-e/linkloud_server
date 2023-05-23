@@ -51,6 +51,47 @@ export class LinkRepository {
     });
   }
 
+  async findLinksByParams(
+    isRead: string | undefined,
+    myCollection: string | undefined,
+    cloudId: string | undefined,
+    sort: string,
+    limit: number,
+    offset: number,
+    user: User,
+  ): Promise<{ linkCount: number; links: Link[] }> {
+    const order = sort === 'DESC' ? 'DESC' : 'ASC';
+
+    let query = this.linkRepository
+      .createQueryBuilder('link')
+      .leftJoinAndSelect('link.cloud', 'cloud') // cloud 관계를 로드
+      .where('link.user = :user', { user: user.id });
+
+    if (isRead !== undefined) {
+      query = query.andWhere('link.isRead = :isRead', { isRead: isRead === 'true' });
+    }
+
+    if (myCollection !== undefined) {
+      query = query.andWhere('link.isInMyCollection = :isInMyCollection', {
+        isInMyCollection: myCollection === 'true',
+      });
+    }
+
+    if (cloudId !== undefined) {
+      if (cloudId === '0') {
+        query = query.andWhere('link.cloud.id IS NULL');
+      } else {
+        query = query.andWhere('link.cloud.id = :cloudId', { cloudId });
+      }
+    }
+
+    const linkCount = await query.getCount(); // 별도의 쿼리 빌더를 생성하여 linkCount를 계산한다. links에 같이 count 까지 나오게하면 skip, take에 영향받은 count가 받아지기 때문에
+
+    const links = await query.orderBy('link.createdAt', order).skip(offset).take(limit).getMany();
+
+    return { linkCount, links };
+  }
+
   async findLinkByIdAndUser(id: number, user: User): Promise<Link | null> {
     return await this.linkRepository.findOne({
       where: {
@@ -59,6 +100,12 @@ export class LinkRepository {
       },
       relations: ['cloud'],
     });
+  }
+
+  async updateLinkRead(link: Link): Promise<Link> {
+    link.isRead = true;
+    link.readAt = new Date();
+    return await this.linkRepository.save(link);
   }
 
   async updateLink(body: UpdateLinkDto, link: Link, cloud: Cloud | null): Promise<Link> {

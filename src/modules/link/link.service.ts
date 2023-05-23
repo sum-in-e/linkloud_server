@@ -45,6 +45,22 @@ export class LinkService {
     }
   }
 
+  async getLinks(
+    isRead: string | undefined,
+    myCollection: string | undefined,
+    cloudId: string | undefined,
+    sort: string,
+    limit: number,
+    offset: number,
+    user: User,
+  ): Promise<{ linkCount: number; links: Link[] }> {
+    try {
+      return await this.linkRepository.findLinksByParams(isRead, myCollection, cloudId, sort, limit, offset, user);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
+    }
+  }
+
   async getLinkDetail(id: number, user: User): Promise<Link> {
     let foundLink: Link | null;
 
@@ -57,10 +73,27 @@ export class LinkService {
     }
 
     if (!foundLink) {
-      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
+      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND, ResponseCode.LINK_NOT_FOUND, { status: 404 });
     }
 
     return foundLink;
+  }
+
+  async updateLinkRead(id: number, user: User): Promise<Link> {
+    const foundLink = await this.getLinkDetail(id, user);
+
+    if (foundLink.isRead === true) {
+      // 이미 열람 처리된 링크일 경우 DB 업데이트 로직을 실행하지 않고 종료
+      return foundLink;
+    }
+
+    try {
+      return await this.linkRepository.updateLinkRead(foundLink);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '열람 처리 실패', {
+        status: 500,
+      });
+    }
   }
 
   async updateLink(id: number, body: UpdateLinkDto, user: User): Promise<Link> {
