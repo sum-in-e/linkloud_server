@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryRunner, Repository } from 'typeorm';
+import { Brackets, QueryRunner, Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
 import { Link } from 'src/modules/link/entities/link.entity';
@@ -42,30 +42,22 @@ export class LinkRepository {
     return await queryRunner.manager.save(links); // save 메소드는 단일 엔티티 또는 엔티티 배열을 인자로 받아 저장할 수 있다.
   }
 
-  async countLinksInMyCollection(user: User): Promise<number> {
-    return await this.linkRepository.count({
-      where: {
-        user: { id: user.id },
-        isInMyCollection: true,
-      },
-    });
-  }
-
   async findLinksByParams(
-    isRead: string | undefined,
-    myCollection: string | undefined,
-    cloudId: string | undefined,
     sort: string,
     limit: number,
     offset: number,
     user: User,
+    keyword?: string,
+    isRead?: string,
+    myCollection?: string,
+    cloudId?: string,
   ): Promise<{ linkCount: number; links: Link[] }> {
     const order = sort === 'DESC' ? 'DESC' : 'ASC';
 
     let query = this.linkRepository
       .createQueryBuilder('link')
       .leftJoinAndSelect('link.cloud', 'cloud') // cloud 관계를 로드
-      .where('link.user = :user', { user: user.id });
+      .where('link.user.id = :userId', { userId: user.id });
 
     if (isRead !== undefined) {
       query = query.andWhere('link.isRead = :isRead', { isRead: isRead === 'true' });
@@ -77,6 +69,15 @@ export class LinkRepository {
       });
     }
 
+    if (keyword !== undefined && keyword !== '') {
+      query = query.andWhere(
+        new Brackets((qb) => {
+          qb.where('link.title LIKE :keyword', { keyword: `%${keyword}%` }) // 제목에 키워드가 포함된 경우
+            .orWhere('link.url LIKE :keyword', { keyword: `%${keyword}%` }); // URL에 키워드가 포함된 경우
+        }),
+      );
+    }
+
     if (cloudId !== undefined) {
       if (cloudId === '0') {
         query = query.andWhere('link.cloud.id IS NULL');
@@ -86,7 +87,6 @@ export class LinkRepository {
     }
 
     const linkCount = await query.getCount(); // 별도의 쿼리 빌더를 생성하여 linkCount를 계산한다. links에 같이 count 까지 나오게하면 skip, take에 영향받은 count가 받아지기 때문에
-
     const links = await query.orderBy('link.createdAt', order).skip(offset).take(limit).getMany();
 
     return { linkCount, links };
@@ -140,5 +140,40 @@ export class LinkRepository {
 
   async deleteLinks(findedLinks: Link[], queryRunner: QueryRunner): Promise<Link[]> {
     return await queryRunner.manager.remove(findedLinks);
+  }
+
+  async countLinksInMyCollection(user: User): Promise<number> {
+    return await this.linkRepository.count({
+      where: {
+        user: { id: user.id },
+        isInMyCollection: true,
+      },
+    });
+  }
+
+  async countAllLinks(user: User): Promise<number> {
+    return await this.linkRepository.count({
+      where: {
+        user: { id: user.id },
+      },
+    });
+  }
+
+  async countUnreadLinks(user: User): Promise<number> {
+    return await this.linkRepository.count({
+      where: {
+        user: { id: user.id },
+        isRead: false,
+      },
+    });
+  }
+
+  async countUncategorizedLinks(user: User): Promise<number> {
+    return await this.linkRepository
+      .createQueryBuilder('link')
+      .leftJoin('link.cloud', 'cloud')
+      .where('link.user.id = :userId', { userId: user.id })
+      .andWhere('link.cloud.id IS NULL')
+      .getCount();
   }
 }
