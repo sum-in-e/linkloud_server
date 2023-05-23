@@ -16,7 +16,7 @@ export class CloudRepository {
     return this.cloudRepository
       .createQueryBuilder('cloud')
       .where('cloud.id = :id', { id })
-      .andWhere('cloud.user = :userId', { userId: user.id }) // 💡일반 where 메서드에서는 왜래키 컬럼 지정 시 cloud.user와 같이 관계 이름을 사용해서 지정한다.
+      .andWhere('cloud.user.id = :userId', { userId: user.id }) // 💡일반 where 메서드에서는 왜래키 컬럼 지정 시 cloud.user와 같이 관계 이름을 사용해서 지정한다.
       .getOne();
   }
 
@@ -24,17 +24,17 @@ export class CloudRepository {
     return queryRunner.manager
       .createQueryBuilder(Cloud, 'cloud')
       .where('cloud.id = :id', { id })
-      .andWhere('cloud.user = :userId', { userId: user.id })
+      .andWhere('cloud.user.id = :userId', { userId: user.id })
       .getOne();
   }
 
   /**
-   * @description 로그인한 유저가 소유한 클라우드의 개수를 조회합니다.
+   * @description 유저가 소유한 클라우드의 개수를 조회합니다.
    */
   async countUserClouds(user: User): Promise<number> {
     return await this.cloudRepository
       .createQueryBuilder('cloud')
-      .where('cloud.user = :userId', { userId: user.id })
+      .where('cloud.user.id = :userId', { userId: user.id })
       .getCount();
   }
 
@@ -44,7 +44,7 @@ export class CloudRepository {
   async findMaxPositionCloud(user: User): Promise<Cloud | null> {
     return await this.cloudRepository
       .createQueryBuilder('cloud')
-      .where('cloud.user = :userId', { userId: user.id })
+      .where('cloud.user.id = :userId', { userId: user.id })
       .orderBy('cloud.position', 'DESC')
       .getOne();
   }
@@ -68,7 +68,7 @@ export class CloudRepository {
       .createQueryBuilder('cloud')
       .loadRelationCountAndMap('cloud.linkCount', 'cloud.links') // 클라우드에 연결된 링크의 개수를 로드하고, linkCount 속성에 매핑
       .select(['cloud.id', 'cloud.name', 'cloud.position'])
-      .where('cloud.user = :userId', { userId: user.id })
+      .where('cloud.user.id = :userId', { userId: user.id })
       .orderBy('cloud.position', 'DESC')
       .getMany();
   }

@@ -35,8 +35,8 @@ export class CloudController {
     };
   }
 
-  @ApiOperation({ summary: '로그인한 유저의 클라우드 리스트 조회' })
-  @Get('/list')
+  @ApiOperation({ summary: '클라우드 리스트 조회' })
+  @Get('list')
   async getClouds(@Req() request: RequestWithUser) {
     const user = request.user;
     const clouds = await this.cloudService.getClouds(user);
@@ -48,7 +48,7 @@ export class CloudController {
   }
 
   @ApiOperation({ summary: '클라우드 순서 변경' })
-  @Patch('/position/:id')
+  @Patch('position/:id')
   @UseInterceptors(TransactionInterceptor)
   async updateCloudPosition(
     @Param('id', ParseIntPipe) id: number,
@@ -63,7 +63,7 @@ export class CloudController {
   }
 
   @ApiOperation({ summary: '클라우드 수정' })
-  @Patch('/:id')
+  @Patch(':id')
   async updateCloud(
     @Param('id', ParseIntPipe) id: number,
     @Body(ValidationPipe) body: CloudNameDto,
@@ -79,7 +79,7 @@ export class CloudController {
   }
 
   @ApiOperation({ summary: '클라우드 제거' })
-  @Delete('/:id')
+  @Delete(':id')
   @UseInterceptors(TransactionInterceptor)
   async deleteCloud(
     @Param('id', ParseIntPipe) id: number,

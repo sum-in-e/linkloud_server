@@ -48,17 +48,6 @@ export class LinkController {
     };
   }
 
-  @ApiOperation({ summary: '내 컬렉션에 등록된 링크 개수 조회' })
-  @Get('count/my-collection')
-  async getLinkCountInMyCollection(@Req() request: RequestWithUser) {
-    const user = request.user;
-    const count = await this.linkService.getLinkCountInMyCollection(user);
-
-    return {
-      count,
-    };
-  }
-
   @ApiOperation({
     summary: '링크 리스트 조회',
     description: 'limit, offset 외 아무 쿼리도 보내지 않으면 전체 조회',

@@ -14,6 +14,7 @@ import { SuccessInterceptor } from 'src/core/http/interceptors/http-success.inte
 import { LinkModule } from 'src/modules/link/link.module';
 import { CloudModule } from 'src/modules/cloud/cloud.module';
 import { AuthModule } from 'src/core/auth/auth.module';
+import { GroupsModule } from './modules/group/group.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AuthModule } from 'src/core/auth/auth.module';
     LinkModule,
     CloudModule,
     AuthModule,
+    GroupsModule,
   ],
   controllers: [AppController],
   providers: [

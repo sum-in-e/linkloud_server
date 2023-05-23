@@ -42,15 +42,6 @@ export class LinkRepository {
     return await queryRunner.manager.save(links); // save 메소드는 단일 엔티티 또는 엔티티 배열을 인자로 받아 저장할 수 있다.
   }
 
-  async countLinksInMyCollection(user: User): Promise<number> {
-    return await this.linkRepository.count({
-      where: {
-        user: { id: user.id },
-        isInMyCollection: true,
-      },
-    });
-  }
-
   async findLinksByParams(
     sort: string,
     limit: number,
@@ -149,5 +140,40 @@ export class LinkRepository {
 
   async deleteLinks(findedLinks: Link[], queryRunner: QueryRunner): Promise<Link[]> {
     return await queryRunner.manager.remove(findedLinks);
+  }
+
+  async countLinksInMyCollection(user: User): Promise<number> {
+    return await this.linkRepository.count({
+      where: {
+        user: { id: user.id },
+        isInMyCollection: true,
+      },
+    });
+  }
+
+  async countAllLinks(user: User): Promise<number> {
+    return await this.linkRepository.count({
+      where: {
+        user: { id: user.id },
+      },
+    });
+  }
+
+  async countUnreadLinks(user: User): Promise<number> {
+    return await this.linkRepository.count({
+      where: {
+        user: { id: user.id },
+        isRead: false,
+      },
+    });
+  }
+
+  async countUncategorizedLinks(user: User): Promise<number> {
+    return await this.linkRepository
+      .createQueryBuilder('link')
+      .leftJoin('link.cloud', 'cloud')
+      .where('link.user.id = :userId', { userId: user.id })
+      .andWhere('link.cloud.id IS NULL')
+      .getCount();
   }
 }
