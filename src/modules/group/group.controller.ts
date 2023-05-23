@@ -1,8 +1,9 @@
 import { Controller, Get, Req } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { GroupsService } from 'src/modules/group/group.service';
 
+@ApiTags('그룹 APIs')
 @Controller('groups')
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}

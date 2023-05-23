@@ -74,6 +74,19 @@ export class CloudRepository {
   }
 
   /**
+   * @description id에 해당하는 클라우드를 조회하고 연결된 링크 개수를 함께 반환합니다.
+   */
+  async getCloudWithLinkCount(id: number, user: User): Promise<Cloud | null> {
+    return this.cloudRepository
+      .createQueryBuilder('cloud')
+      .loadRelationCountAndMap('cloud.linkCount', 'cloud.links') // 클라우드에 연결된 링크의 개수를 로드하고, linkCount 속성에 매핑
+      .select(['cloud.id', 'cloud.name'])
+      .where('cloud.user.id = :userId', { userId: user.id })
+      .andWhere('cloud.id = :id', { id })
+      .getOne();
+  }
+
+  /**
    * @description [클라우드 순서 변경] 유저가 선택한 클라우드의 position 필드를 새로운 위치로 업데이트합니다.
    */
   async updateCloudPosition(cloud: Cloud, newPostion: number, queryRunner: QueryRunner): Promise<void> {

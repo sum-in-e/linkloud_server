@@ -23,7 +23,7 @@ export class HttpExceptionFilter {
 
     let code: ResponseCode;
     let status: number;
-    const message: string = exception.message;
+    let message: string = exception.message;
     let data: unknown | null = null;
 
     // 예외 객체가 HttpException 타입인지 확인
@@ -43,6 +43,7 @@ export class HttpExceptionFilter {
       // * HttpException 타입이 아닐 경우 -> 500에러
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = ResponseCode.INTERNAL_SERVER_ERROR;
+      message = 'Internal Server Error'; // TODO: 로깅 시에는 이거 말고 exception.message를 로깅에 찍히게 하기
     }
 
     response.status(status).json(this.httpResponseBuilder.buildErrorResponse(status, message, code, data));

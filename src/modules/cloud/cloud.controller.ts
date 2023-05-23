@@ -47,6 +47,13 @@ export class CloudController {
     };
   }
 
+  @ApiOperation({ summary: '클라우드 개별 조회' })
+  @Get(':id')
+  async getCloud(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+    const user = request.user;
+    return await this.cloudService.getCloudByIdAndUser(id, user);
+  }
+
   @ApiOperation({ summary: '클라우드 순서 변경' })
   @Patch('position/:id')
   @UseInterceptors(TransactionInterceptor)
