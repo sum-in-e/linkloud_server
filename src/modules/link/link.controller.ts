@@ -19,7 +19,6 @@ import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 import { CreateLinkDto, DeleteLinksDto, UpdateLinkDto, UpdateLinksCloudDto } from 'src/modules/link/dto/link.dto';
-import { Link } from 'src/modules/link/entities/link.entity';
 import { LinkAnalyzeService } from 'src/modules/link/link-analyze.service';
 import { LinkService } from 'src/modules/link/link.service';
 import { UpdateLinkPipe } from 'src/modules/link/pipes/update-link.pipe';
@@ -61,10 +60,11 @@ export class LinkController {
   }
 
   @ApiOperation({
-    summary: '조건에 맞는 링크 조회',
+    summary: '링크 리스트 조회',
     description: 'limit, offset 외 아무 쿼리도 보내지 않으면 전체 조회',
   })
   @Get('list')
+  @ApiQuery({ name: 'keyword', type: String, description: '검색어', required: false })
   @ApiQuery({
     name: 'isRead',
     type: String,
@@ -101,27 +101,30 @@ export class LinkController {
     required: true,
   })
   async getLinks(
-    @Query('isRead', new DefaultValuePipe(undefined)) isRead: string | undefined,
-    @Query('myCollection', new DefaultValuePipe(undefined)) myCollection: string | undefined,
-    @Query('cloudId', new DefaultValuePipe(undefined)) cloudId: string | undefined,
+    @Req() request: RequestWithUser,
     @Query('sort', new DefaultValuePipe('DESC')) sort: string,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
     @Query('limit', new DefaultValuePipe(40), ParseIntPipe) limit: number,
-    @Req() request: RequestWithUser,
+    @Query('keyword', new DefaultValuePipe(undefined)) keyword?: string,
+    @Query('isRead', new DefaultValuePipe(undefined)) isRead?: string,
+    @Query('myCollection', new DefaultValuePipe(undefined)) myCollection?: string,
+    @Query('cloudId', new DefaultValuePipe(undefined)) cloudId?: string,
   ) {
     const user = request.user;
+
     const { linkCount, links } = await this.linkService.getLinks(
-      isRead,
-      myCollection,
-      cloudId,
       sort,
       limit,
       offset,
       user,
+      keyword,
+      isRead,
+      myCollection,
+      cloudId,
     );
 
     return {
-      linkCount,
+      count: linkCount,
       links: links.map((link) => ({
         id: link.id,
         url: link.url,

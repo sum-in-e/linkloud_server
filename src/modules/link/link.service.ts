@@ -46,16 +46,26 @@ export class LinkService {
   }
 
   async getLinks(
-    isRead: string | undefined,
-    myCollection: string | undefined,
-    cloudId: string | undefined,
     sort: string,
     limit: number,
     offset: number,
     user: User,
+    keyword?: string,
+    isRead?: string,
+    myCollection?: string,
+    cloudId?: string,
   ): Promise<{ linkCount: number; links: Link[] }> {
     try {
-      return await this.linkRepository.findLinksByParams(isRead, myCollection, cloudId, sort, limit, offset, user);
+      return await this.linkRepository.findLinksByParams(
+        sort,
+        limit,
+        offset,
+        user,
+        keyword,
+        isRead,
+        myCollection,
+        cloudId,
+      );
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
     }
