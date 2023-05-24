@@ -42,7 +42,7 @@ async function bootstrap() {
 
   // CORS 옵션 정의
   const corsOptions = {
-    origin: ['http://linkloud.co.kr'], // whitelist에 추가할 도메인
+    origin: ['http://linkloud.co.kr', 'http://localhost:8000'], // whitelist에 추가할 도메인
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     credentials: true, // *🚨프론트에도 withCredential:true 설정 필요

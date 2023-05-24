@@ -148,7 +148,7 @@ export class LinkService {
       }
 
       if (!cloud) {
-        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
+        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, ResponseCode.CLOUD_NOT_FOUND, { status: 404 });
       }
     }
 
@@ -193,7 +193,7 @@ export class LinkService {
     }
 
     if (foundLinks.length !== linkIds.length) {
-      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND);
+      throw new CustomHttpException(ResponseCode.LINK_NOT_FOUND, ResponseCode.LINK_NOT_FOUND, { status: 404 });
     }
 
     return foundLinks;
@@ -217,7 +217,7 @@ export class LinkService {
       }
 
       if (!cloud) {
-        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND);
+        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, ResponseCode.CLOUD_NOT_FOUND, { status: 404 });
       }
     }
 

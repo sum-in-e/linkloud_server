@@ -9,6 +9,8 @@ import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.d
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
 import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao-virification-info.ropository';
+import { CloudRepository } from 'src/modules/cloud/repository/cloud.repository';
+import { LinkRepository } from 'src/modules/link/repositories/link.repository';
 
 @Injectable()
 export class UserService {
@@ -18,6 +20,8 @@ export class UserService {
   constructor(
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
+    private readonly cloudRepository: CloudRepository,
+    private readonly linkRepository: LinkRepository,
     private readonly emailVerificationRepository: EmailVerificationRepository,
     private readonly kakaoVericationInfoRepository: KakaoVericationInfoRepository,
   ) {
@@ -185,8 +189,39 @@ export class UserService {
       });
     }
 
-    // * 휴면 계정 예외 처리
+    // TODO: 휴면 계정 예외 처리
 
     return user;
+  }
+
+  /**
+   * @description 유저 로그인 시점에 lastLoginAt 필드에 로그인 일자 업데이트하는 메서드
+   */
+  async updateLastLoginAt(user: User, queryRunner?: QueryRunner): Promise<void> {
+    if (queryRunner) {
+      await this.userRepository.updateLastLoginAt(user, queryRunner);
+    } else {
+      await this.userRepository.updateLastLoginAt(user);
+    }
+  }
+
+  async deleteUser(user: User, queryRunner: QueryRunner): Promise<void> {
+    try {
+      const clouds = await this.cloudRepository.findCloudByUser(user, queryRunner);
+      const links = await this.linkRepository.findLinksByUser(user, queryRunner);
+
+      // 유저와 연결된 링크와 클라우드를 제거한다
+      if (clouds.length > 0) {
+        await this.cloudRepository.deleteClouds(clouds, queryRunner);
+      }
+      if (links.length > 0) {
+        await this.linkRepository.deleteLinks(links, queryRunner);
+      }
+
+      // 유저는 softDelete 처리한다.
+      return await this.userRepository.deleteUser(user, queryRunner);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.UNKNOWN_ERROR, '회원탈퇴 실패', { status: 500 });
+    }
   }
 }

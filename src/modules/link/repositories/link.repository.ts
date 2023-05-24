@@ -42,6 +42,16 @@ export class LinkRepository {
     return await queryRunner.manager.save(links); // save 메소드는 단일 엔티티 또는 엔티티 배열을 인자로 받아 저장할 수 있다.
   }
 
+  /**
+   * @description 유저가 소유한 링크를 조회합니다.
+   */
+  async findLinksByUser(user: User, queryRunner: QueryRunner): Promise<Link[] | []> {
+    return await queryRunner.manager
+      .createQueryBuilder(Link, 'link')
+      .where('link.user.id = :userId', { userId: user.id })
+      .getMany();
+  }
+
   async findLinksByParams(
     sort: string,
     limit: number,
@@ -138,8 +148,8 @@ export class LinkRepository {
       .getMany();
   }
 
-  async deleteLinks(findedLinks: Link[], queryRunner: QueryRunner): Promise<Link[]> {
-    return await queryRunner.manager.remove(findedLinks);
+  async deleteLinks(links: Link[], queryRunner: QueryRunner): Promise<Link[]> {
+    return await queryRunner.manager.remove(links);
   }
 
   async countLinksInMyCollection(user: User): Promise<number> {

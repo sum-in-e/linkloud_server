@@ -47,14 +47,17 @@ export class User extends BaseEntity {
   @DeleteDateColumn({ type: 'datetime', nullable: true })
   deletedAt!: Date | null;
 
+  @Column({ type: 'datetime', nullable: true })
+  lastLoginAt!: Date | null;
+
   @OneToMany(() => Link, (link) => link.user, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE', // 유저가 삭제될 때 연결된 링크도 삭제
     onUpdate: 'CASCADE',
   })
   links!: Link[] | [];
 
   @OneToMany(() => Cloud, (cloud) => cloud.user, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE', // 유저가 삭제될 때 연결된 클라우드도 삭제
     onUpdate: 'CASCADE',
   })
   clouds!: Cloud[] | [];

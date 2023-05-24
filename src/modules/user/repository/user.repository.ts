@@ -12,7 +12,11 @@ export class UserRepository {
     private userRepository: Repository<User>,
   ) {}
 
+  /**
+   * @description id에 해당하는 유저를 찾는 메서드(AuthGuard 전용)
+   */
   async findUserByIdForAuthGuard(id: number): Promise<User | null> {
+    // 💡 로그인 과정에서 회원 탈퇴나 휴면 처리된 사용자에 대한 체크를 하고 있다면 이를 AuthGuard에서 다시 체크할 필요는 없다.일반적으로 로그인 과정에서 이러한 사용자 상태를 체크하고, 필요한 경우 해당 사용자를 로그인할 수 없게 하며, 필요한 오류 메시지를 반환하도록 한다. 따라서 AuthGuard에서는 일반적으로 해당 사용자가 유효한 토큰을 가지고 있는지, 토큰이 해당 사용자의 것이 맞는지만 확인하면 된다.
     return await this.userRepository.findOne({ where: { id } });
   }
 
@@ -20,11 +24,14 @@ export class UserRepository {
    * @description 회원가입/로그인에서 이메일을 가진 유저를 조회하기 위해 사용합니다.
    */
   async findUserByEmail(email: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴 -> 회원가입, 로그인에서 써서 탈퇴 계정 안내하려고
+    return await this.userRepository.findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴 -> 회원가입, 로그인에서 탈퇴 계정 안내하려고
   }
 
+  /**
+   * @description 회원가입/로그인에서 이메일을 가진 유저를 조회하기 위해 사용합니다. (트랜잭션 적용)
+   */
   async findUserByEmailInTransaction(email: string, queryRunner: QueryRunner): Promise<User | null> {
-    return await queryRunner.manager.getRepository(User).findOne({ where: { email } });
+    return await queryRunner.manager.getRepository(User).findOne({ where: { email }, withDeleted: true }); // deleted_at이 있는 유저도 불러옴 -> 회원가입, 로그인에서 탈퇴 계정 안내하려고
   }
 
   async createUserByEmail(body: SignUpDto, hashedPassword: string, queryRunner: QueryRunner): Promise<User> {
@@ -44,5 +51,18 @@ export class UserRepository {
     user.method = 'kakao';
 
     return await queryRunner.manager.save(user);
+  }
+
+  async updateLastLoginAt(user: User, queryRunner?: QueryRunner): Promise<User> {
+    user.lastLoginAt = new Date();
+
+    if (queryRunner) {
+      return await queryRunner.manager.save(user);
+    }
+    return await this.userRepository.save(user);
+  }
+
+  async deleteUser(user: User, queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.manager.softDelete(User, user.id);
   }
 }

@@ -24,6 +24,12 @@ export class EmailVerificationService {
     // 이미 가입된 이메일인지 확인
     const user = await this.userRepository.findUserByEmail(email);
 
+    if (user?.deletedAt) {
+      throw new CustomHttpException(ResponseCode.DELETED_USER, '회원 탈퇴 처리된 이메일입니다.', {
+        data: { email: user.email, method: user.method },
+      });
+    }
+
     if (user) {
       throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.');
     }
@@ -50,7 +56,7 @@ export class EmailVerificationService {
     const emaiVerificationInfo = await this.emailVerificationRepository.findEmailVerification(email, verificationCode);
 
     if (!emaiVerificationInfo) {
-      throw new CustomHttpException(ResponseCode.VERIFICATION_INFO_NOT_EXITS, '인증번호를 다시 확인해 주세요.');
+      throw new CustomHttpException(ResponseCode.VERIFICATION_INFO_NOT_EXITS, '유효하지 않은 인증번호입니다.');
     }
 
     const isExpired = emaiVerificationInfo.expired_at < new Date();

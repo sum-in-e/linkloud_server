@@ -53,13 +53,13 @@ export class Link {
   deletedAt!: Date | null;
 
   @ManyToOne(() => Cloud, (cloud) => cloud.links, {
-    onDelete: 'CASCADE',
+    onDelete: 'CASCADE', // 클라우드가 삭제될 때, 해당 클라우드를 참조하고 있는 링크도 함께 삭제된다.
     onUpdate: 'CASCADE',
   })
   cloud!: Cloud | null;
 
   @ManyToOne(() => User, (user) => user.links, {
-    onDelete: 'CASCADE',
+    onDelete: 'CASCADE', // 유저가 삭제될 때, 해당 유저를 참조하고 있는 링크도 함께 삭제된다.
     onUpdate: 'CASCADE',
   })
   user!: User;
