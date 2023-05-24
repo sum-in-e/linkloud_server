@@ -185,8 +185,19 @@ export class UserService {
       });
     }
 
-    // * 휴면 계정 예외 처리
+    // * TODO: 휴면 계정 예외 처리
 
     return user;
+  }
+
+  /**
+   * @description 유저 로그인 시점에 lastLoginAt 필드에 로그인 일자 업데이트하는 메서드
+   */
+  async updateLastLoginAt(user: User, queryRunner?: QueryRunner): Promise<void> {
+    if (queryRunner) {
+      await this.userRepository.updateLastLoginAt(user, queryRunner);
+    } else {
+      await this.userRepository.updateLastLoginAt(user);
+    }
   }
 }

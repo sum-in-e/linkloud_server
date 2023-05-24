@@ -45,4 +45,13 @@ export class UserRepository {
 
     return await queryRunner.manager.save(user);
   }
+
+  async updateLastLoginAt(user: User, queryRunner?: QueryRunner): Promise<User> {
+    user.lastLoginAt = new Date();
+
+    if (queryRunner) {
+      return await queryRunner.manager.save(user);
+    }
+    return await this.userRepository.save(user);
+  }
 }

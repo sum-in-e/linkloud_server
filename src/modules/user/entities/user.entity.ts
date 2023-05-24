@@ -47,6 +47,9 @@ export class User extends BaseEntity {
   @DeleteDateColumn({ type: 'datetime', nullable: true })
   deletedAt!: Date | null;
 
+  @Column({ type: 'datetime', nullable: true })
+  lastLoginAt!: Date | null;
+
   @OneToMany(() => Link, (link) => link.user, {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
