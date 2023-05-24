@@ -1,6 +1,6 @@
 import { QueryRunner } from 'typeorm';
-import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors, Req } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors, Req, Delete } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
@@ -148,10 +148,23 @@ export class UserController {
   @Post('logout')
   @IsPublic()
   async logout(@Res({ passthrough: true }) response: Response) {
-    response.cookie('act', '', { maxAge: 0, httpOnly: true, secure: true, sameSite: 'lax' });
-    response.cookie('rft', '', { maxAge: 0, httpOnly: true, secure: true, sameSite: 'lax' });
+    await this.authService.expireTokens(response);
     return {};
   }
 
-  // TODO: 회원 탈퇴
+  @ApiOperation({ summary: '회원탈퇴' })
+  @Delete()
+  @UseInterceptors(TransactionInterceptor)
+  async deleteMe(
+    @Res({ passthrough: true }) response: Response,
+    @Req() request: RequestWithUser,
+    @TransactionManager() queryRunner: QueryRunner,
+  ) {
+    const user = request.user;
+
+    await this.userService.deleteUser(user, queryRunner);
+    await this.authService.expireTokens(response);
+
+    return {};
+  }
 }

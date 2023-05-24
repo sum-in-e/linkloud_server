@@ -6,6 +6,7 @@ import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
 import { parse } from 'querystring';
+import { User } from 'src/modules/user/entities/user.entity';
 
 function parseCookies(cookies: string) {
   return parse(cookies, '; ');
@@ -25,15 +26,16 @@ export class AuthService {
   }
 
   /**
-   * @description 유저가 존재하면 유저 객체를 반환하고, 존재하지 않으면 에러를 발생시키는 메서드
+   * @description id에 해당하는 유저를 찾는 메서드(AuthGuard 전용)
    */
-  async findUserByIdForAuthGuard(id: number) {
-    // TODO: 나중에는 휴면계정도 예외 처리 해야하지 않을까
+  async findUserByIdForAuthGuard(id: number, response: Response): Promise<User> {
     const user = await this.userRepository.findUserByIdForAuthGuard(id);
 
     if (!user) {
-      throw new CustomHttpException(ResponseCode.USER_NOT_EXIST, '존재하지 않는 유저입니다.');
+      await this.expireTokens(response); // 토큰 해석해서 유저 id 가져왔는데 못 찾았으면 토큰 만료시키기 (혹시 몰라서)
+      throw new CustomHttpException(ResponseCode.USER_NOT_EXIST, '잘못된 접근입니다. 로그인이 필요합니다.');
     }
+
     return user;
   }
 
@@ -53,7 +55,7 @@ export class AuthService {
     try {
       const decoded = await this.jwtService.verifyAsync(accessToken, {
         secret: this.JWT_SECRET_KEY,
-      });
+      }); // 검증 실패 시 catch 블록으로 이동함
 
       return {
         userId: decoded.userId,
@@ -63,12 +65,12 @@ export class AuthService {
       if (typeof error === 'object' && error !== null && 'name' in error) {
         const e = error as { name?: string };
         if (e.name === 'TokenExpiredError' || e.name === 'JsonWebTokenError') {
-          // 액세스 토큰 검사했는데 만료는 등 문제가 있다 -> 리프레시 토큰 확인
+          // 액세스 토큰 검사했는데 만료 등 문제가 있다 -> 리프레시 토큰 확인
           try {
             const refreshToken = parsedCookies['rft'] as string;
             const decoded = await this.jwtService.verifyAsync(refreshToken, {
               secret: this.JWT_SECRET_KEY,
-            });
+            }); // 검증 실패 시 catch 블록으로 이동함
 
             // 리프레시 토큰은 있고 문제도 없다. -> 토큰 둘다 갱신 하고 API 요청 수행
             await this.generateTokens(decoded.userId, decoded.email, response);
@@ -92,7 +94,7 @@ export class AuthService {
   }
 
   /**
-   * @description JWT로 액세스토 큰과 리프레시 토큰 생성하고 응답 헤더에 저장하는 메서드
+   * @description JWT로 액세스토큰과 리프레시 토큰 생성하고 응답 헤더에 저장하는 메서드
    */
   async generateTokens(userId: number, email: string, response: Response): Promise<void> {
     const cookieOptions = {
@@ -112,5 +114,20 @@ export class AuthService {
     } catch (error) {
       throw new CustomHttpException(ResponseCode.GENERATE_TOKEN_FAILED, `${error}`, { status: 500 });
     }
+  }
+
+  /**
+   * @description 액세스토큰과 리프레시 토큰을 만료시키는 메서드
+   */
+  async expireTokens(response: Response): Promise<void> {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: this.MODE === 'production' ? true : false,
+      sameSite: 'lax',
+      maxAge: 0,
+    } as CookieOptions;
+
+    response.cookie('act', '', cookieOptions);
+    response.cookie('rft', '', cookieOptions);
   }
 }

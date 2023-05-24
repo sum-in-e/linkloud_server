@@ -29,6 +29,16 @@ export class CloudRepository {
   }
 
   /**
+   * @description 유저가 소유한 클라우드를 조회합니다.
+   */
+  async findCloudByUser(user: User, queryRunner: QueryRunner): Promise<Cloud[] | []> {
+    return await queryRunner.manager
+      .createQueryBuilder(Cloud, 'cloud')
+      .where('cloud.user.id = :userId', { userId: user.id })
+      .getMany();
+  }
+
+  /**
    * @description 유저가 소유한 클라우드의 개수를 조회합니다.
    */
   async countUserClouds(user: User): Promise<number> {
@@ -146,6 +156,13 @@ export class CloudRepository {
    */
   async deleteCloud(cloud: Cloud, queryRunner: QueryRunner): Promise<Cloud> {
     return await queryRunner.manager.remove(cloud);
+  }
+
+  /**
+   * @description 클라우드들을 제거합니다. (회원 탈퇴 시 유저가 소유한 클라우드들 제거하기 위한 용도)
+   */
+  async deleteClouds(clouds: Cloud[], queryRunner: QueryRunner): Promise<Cloud[]> {
+    return await queryRunner.manager.remove(clouds);
   }
 
   /**
