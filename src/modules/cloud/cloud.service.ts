@@ -57,7 +57,7 @@ export class CloudService {
     const cloud = await this.cloudRepository.findCloudByIdAndUserWithTransaction(id, user, queryRunner);
 
     if (!cloud || cloud === null) {
-      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다');
+      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다', { status: 404 });
     }
 
     const userCloudCount = await this.cloudRepository.countUserClouds(user);
@@ -84,7 +84,7 @@ export class CloudService {
     const cloud = await this.cloudRepository.findCloudByIdAndUser(id, user);
 
     if (!cloud || cloud === null) {
-      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다');
+      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다', { status: 404 });
     }
 
     try {
@@ -98,7 +98,7 @@ export class CloudService {
     const cloud = await this.cloudRepository.findCloudByIdAndUserWithTransaction(id, user, queryRunner);
 
     if (!cloud || cloud === null) {
-      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다');
+      throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다', { status: 404 });
     }
 
     try {
