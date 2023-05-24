@@ -26,13 +26,13 @@ export class Cloud {
   position!: number;
 
   @ManyToOne(() => User, (user) => user.clouds, {
-    onDelete: 'CASCADE',
+    onDelete: 'CASCADE', // 유저가 삭제될 때, 해당 유저를 참조하고 있는 클라우드도 함께 삭제된다.
     onUpdate: 'CASCADE',
   })
   user!: User;
 
   @OneToMany(() => Link, (link) => link.cloud, {
-    onDelete: 'SET NULL', // 클라우드에 있는 링크가 삭제되어도 클라우드는 제거되면 안 된다. NO ACTION은 존재하지 않는 링크를 참조하게 될 수 있기 때문에 null로 변하게 해야한다.
+    onDelete: 'CASCADE', // 클라우드가 삭제될 때 연결된 링크도 삭제
     onUpdate: 'CASCADE',
   })
   links!: Link[] | [];
