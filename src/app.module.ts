@@ -15,6 +15,7 @@ import { LinkModule } from 'src/modules/link/link.module';
 import { CloudModule } from 'src/modules/cloud/cloud.module';
 import { AuthModule } from 'src/core/auth/auth.module';
 import { GroupsModule } from './modules/group/group.module';
+import { LoggerModule } from 'src/core/logger/logger.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { GroupsModule } from './modules/group/group.module';
     CloudModule,
     AuthModule,
     GroupsModule,
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [

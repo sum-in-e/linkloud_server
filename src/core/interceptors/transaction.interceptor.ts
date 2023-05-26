@@ -11,23 +11,21 @@ export class TransactionInterceptor implements NestInterceptor {
   constructor(private readonly dataSource: DataSource) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const req = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
     const queryRunner: QueryRunner = await this.startTransaction();
 
-    req.queryRunner = queryRunner;
+    request.queryRunner = queryRunner;
 
     return next.handle().pipe(
       tap(async () => {
         // 성공적으로 완료 시 트랜잭션 커밋
         await queryRunner.commitTransaction();
         await queryRunner.release();
-        console.log('commitTransaction');
       }),
       catchError(async (err) => {
         // 오류 발생 시 트랜잭션 롤백
         await queryRunner.rollbackTransaction();
         await queryRunner.release();
-        console.log('🚨rollbackTransaction🚨');
         throw err;
       }),
     );
