@@ -5,11 +5,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import basicAuth from 'express-basic-auth';
 import { AuthGuard } from 'src/core/auth/guard/auth.guard';
 import { AuthService } from 'src/core/auth/auth.service';
+import { CustomLogger } from 'src/core/logger/logger.provider';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api'); // endpoint prefix
   const configService = app.get(ConfigService);
+
+  const logger = app.get(CustomLogger);
+  app.use(logger.createMorganMiddleware()); // 로깅 (morgan 미들웨어)
 
   const config = new DocumentBuilder()
     .setTitle('Linkloud')
