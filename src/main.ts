@@ -6,7 +6,6 @@ import basicAuth from 'express-basic-auth';
 import { AuthGuard } from 'src/core/auth/guard/auth.guard';
 import { AuthService } from 'src/core/auth/auth.service';
 import { CustomLogger } from 'src/core/logger/logger.provider';
-import * as Sentry from '@sentry/node';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,17 +13,6 @@ async function bootstrap() {
 
   // endpoint prefix
   app.setGlobalPrefix('api');
-
-  // Sentry 설정
-  const sentryDNS = configService.get('SENTRY_DSN');
-  const MODE = configService.get('MODE', 'development');
-
-  if (sentryDNS) {
-    Sentry.init({
-      environment: MODE,
-      dsn: sentryDNS,
-    });
-  }
 
   // Logging 설정 (http 요청 로깅)
   const logger = app.get(CustomLogger);
