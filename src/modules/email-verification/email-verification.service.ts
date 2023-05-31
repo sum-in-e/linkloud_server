@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { EmailVerificationRepository } from 'src/modules/email-verification/repository/email-verification.repository';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
+import { QueryRunner } from 'typeorm';
 
 @Injectable()
 export class EmailVerificationService {
@@ -20,9 +21,9 @@ export class EmailVerificationService {
     this.SENDGRID_API_KEY = this.configService.getOrThrow('SENDGRID_API_KEY');
   }
 
-  async sendVerificationCode(email: string) {
+  async sendVerificationCode(email: string, queryRunner: QueryRunner) {
     // 이미 가입된 이메일인지 확인
-    const user = await this.userRepository.findUserByEmail(email);
+    const user = await this.userRepository.findUserByEmailInTransaction(email, queryRunner);
 
     if (user?.deletedAt) {
       throw new CustomHttpException(ResponseCode.DELETED_USER, '회원 탈퇴 처리된 이메일입니다.', {
@@ -41,12 +42,13 @@ export class EmailVerificationService {
       const savedEmailVerificationData = await this.emailVerificationRepository.createEmailVerification(
         email,
         verification_code,
+        queryRunner,
       );
       await this.sendEmail(email, verification_code, this.SENDGRID_API_KEY);
 
       return { expiredAt: savedEmailVerificationData.expired_at };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.FAILED_TO_SEND_EMAIL, '인증번호 발송에 실패하였습니다.', {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '인증번호 발송에 실패하였습니다.', {
         status: 500,
       });
     }
@@ -56,7 +58,9 @@ export class EmailVerificationService {
     const emaiVerificationInfo = await this.emailVerificationRepository.findEmailVerification(email, verificationCode);
 
     if (!emaiVerificationInfo) {
-      throw new CustomHttpException(ResponseCode.VERIFICATION_INFO_NOT_EXITS, '유효하지 않은 인증번호입니다.');
+      throw new CustomHttpException(ResponseCode.VERIFICATION_INFO_NOT_EXIST, '유효하지 않은 인증번호입니다.', {
+        status: 404,
+      });
     }
 
     const isExpired = emaiVerificationInfo.expired_at < new Date();

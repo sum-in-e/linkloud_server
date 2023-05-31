@@ -49,6 +49,16 @@ export class CloudRepository {
   }
 
   /**
+   * @description 유저가 소유한 클라우드의 개수를 조회합니다. (트랜잭션)
+   */
+  async countUserCloudsWithTransaction(user: User, queryRunner: QueryRunner): Promise<number> {
+    return await queryRunner.manager
+      .createQueryBuilder(Cloud, 'cloud')
+      .where('cloud.user.id = :userId', { userId: user.id })
+      .getCount();
+  }
+
+  /**
    * @description 유저가 소유한 클라우드 중 position이 가장 큰 클라우드를 조회합니다
    */
   async findMaxPositionCloud(user: User): Promise<Cloud | null> {

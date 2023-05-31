@@ -85,3 +85,11 @@ export class LoginDto {
   @IsString()
   password!: string;
 }
+
+export class KakaoCodeDto {
+  @ApiProperty({
+    description: '카카오 인가 코드',
+  })
+  @IsString()
+  code!: string;
+}

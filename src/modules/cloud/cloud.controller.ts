@@ -11,9 +11,10 @@ import {
   ParseIntPipe,
   Delete,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
+import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 import { CloudService } from 'src/modules/cloud/cloud.service';
 import { CloudNameDto, UpdateCloudPositionDto } from 'src/modules/cloud/dto/cloud.dto';
@@ -24,6 +25,7 @@ export class CloudController {
   constructor(private readonly cloudService: CloudService) {}
 
   @ApiOperation({ summary: '클라우드 생성' })
+  @ApiResponse({ status: 400, description: ResponseCode.CREATE_CLOUD_MAXIMUM_20 })
   @Post('')
   async createCloud(@Body(ValidationPipe) body: CloudNameDto, @Req() request: RequestWithUser) {
     const user = request.user;
@@ -48,6 +50,7 @@ export class CloudController {
   }
 
   @ApiOperation({ summary: '클라우드 개별 조회' })
+  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
   @Get(':id')
   async getCloud(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
     const user = request.user;
@@ -55,6 +58,8 @@ export class CloudController {
   }
 
   @ApiOperation({ summary: '클라우드 순서 변경' })
+  @ApiResponse({ status: 400, description: ResponseCode.INVALID_NEW_POSITION })
+  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
   @Patch('position/:id')
   @UseInterceptors(TransactionInterceptor)
   async updateCloudPosition(
@@ -70,6 +75,7 @@ export class CloudController {
   }
 
   @ApiOperation({ summary: '클라우드 수정' })
+  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
   @Patch(':id')
   async updateCloud(
     @Param('id', ParseIntPipe) id: number,
@@ -86,6 +92,7 @@ export class CloudController {
   }
 
   @ApiOperation({ summary: '클라우드 제거' })
+  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
   @Delete(':id')
   @UseInterceptors(TransactionInterceptor)
   async deleteCloud(

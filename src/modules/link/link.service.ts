@@ -3,7 +3,7 @@ import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
 import { CloudRepository } from 'src/modules/cloud/repository/cloud.repository';
-import { CreateLinkDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
+import { CreateLinkDto, GetLinksDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
 import { Link } from 'src/modules/link/entities/link.entity';
 import { LinkRepository } from 'src/modules/link/repositories/link.repository';
 import { User } from 'src/modules/user/entities/user.entity';
@@ -35,27 +35,9 @@ export class LinkService {
     }
   }
 
-  async getLinks(
-    sort: string,
-    limit: number,
-    offset: number,
-    user: User,
-    keyword?: string,
-    isRead?: string,
-    myCollection?: string,
-    cloudId?: string,
-  ): Promise<{ linkCount: number; links: Link[] }> {
+  async getLinks(user: User, query: GetLinksDto): Promise<{ linkCount: number; links: Link[] }> {
     try {
-      return await this.linkRepository.findLinksByParams(
-        sort,
-        limit,
-        offset,
-        user,
-        keyword,
-        isRead,
-        myCollection,
-        cloudId,
-      );
+      return await this.linkRepository.findLinksByParams(user, query);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
     }

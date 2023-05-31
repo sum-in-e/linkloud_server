@@ -112,7 +112,11 @@ export class AuthService {
       response.cookie('act', accessToken, cookieOptions);
       response.cookie('rft', refreshToken, cookieOptions);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.GENERATE_TOKEN_FAILED, `${error}`, { status: 500 });
+      throw new CustomHttpException(
+        ResponseCode.INTERNAL_SERVER_ERROR,
+        `${ResponseCode.GENERATE_TOKEN_FAILED} ${error}`,
+        { status: 500 },
+      );
     }
   }
 

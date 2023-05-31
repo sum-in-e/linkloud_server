@@ -57,7 +57,7 @@ export class UserService {
     try {
       return await this.userRepository.createUserByEmail(body, hashedPassword, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원가입에 실패하였습니다.', { status: 500 });
     }
   }
 
@@ -84,7 +84,7 @@ export class UserService {
         sub: result.sub,
       };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원가입에 실패하였습니다.', { status: 500 });
     }
   }
 
@@ -96,7 +96,13 @@ export class UserService {
     const kakaoVerificationInfo = await this.kakaoVericationInfoRepository.findEmailBySub(body.sign, queryRunner);
 
     if (!kakaoVerificationInfo) {
-      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.');
+      throw new CustomHttpException(
+        ResponseCode.KAKAO_VERIFICATION_INFO_NOT_EXIST,
+        '카카오 인증 정보를 찾을 수 없습니다.',
+        {
+          status: 404,
+        },
+      );
     }
 
     const user = await this.userRepository.findUserByEmailInTransaction(kakaoVerificationInfo.email, queryRunner);
@@ -120,7 +126,7 @@ export class UserService {
     try {
       return await this.userRepository.createUserByKakao(kakaoVerificationInfo.email, body.name, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.SIGN_UP_FAILED, '회원가입에 실패하였습니다.', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원가입에 실패하였습니다.', { status: 500 });
     }
   }
 
@@ -132,7 +138,7 @@ export class UserService {
 
     // 가입된 계정 존재하는지 확인
     if (!user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '존재하지 않는 이메일입니다.');
+      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '존재하지 않는 이메일입니다.', { status: 404 });
     }
 
     if (user.method === 'email') {
@@ -153,7 +159,7 @@ export class UserService {
 
     // 가입된 계정 존재하는지 확인
     if (!user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '존재하지 않는 이메일입니다.');
+      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '존재하지 않는 이메일입니다.', { status: 404 });
     }
 
     // 카카오로 가입한 계정인 경우 예외 처리
@@ -165,7 +171,7 @@ export class UserService {
     await this.checkUserStatusByEmail(user);
 
     if (!user.password) {
-      throw new CustomHttpException(ResponseCode.LOGIN_FAILED, '로그인에 실패하였습니다.');
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '로그인에 실패하였습니다.', { status: 500 });
     }
 
     // 비밀번호 검증
@@ -221,7 +227,7 @@ export class UserService {
       // 유저는 softDelete 처리한다.
       return await this.userRepository.deleteUser(user, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.UNKNOWN_ERROR, '회원탈퇴 실패', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원탈퇴 실패', { status: 500 });
     }
   }
 }

@@ -60,7 +60,7 @@ export class CloudService {
       throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다', { status: 404 });
     }
 
-    const userCloudCount = await this.cloudRepository.countUserClouds(user);
+    const userCloudCount = await this.cloudRepository.countUserCloudsWithTransaction(user, queryRunner);
     if (newPosition < 0 || newPosition >= userCloudCount) {
       // 새위치가 음수로 오거나, 가지고 있는 클라우드의 수 이상으로 들어오면 position 사이에 공백이 생기면서 연속성이 깨지므로 이에 대한 예외 처리
       throw new CustomHttpException(ResponseCode.INVALID_NEW_POSITION, '새로운 위치가 유효하지 않습니다');
@@ -74,7 +74,7 @@ export class CloudService {
 
     try {
       await this.cloudRepository.updateCloudPosition(cloud, newPosition, queryRunner); // 선택한 클라우드의 위치를 수정
-      await this.cloudRepository.updateOtherCloudsPosition(prevPosition, newPosition, id, user, queryRunner); // 클라우드 위치 변경에 영향 받는 클라우드들의 Position 수정
+      await this.cloudRepository.updateOtherCloudsPosition(prevPosition, newPosition, id, user, queryRunner); // 위 클라우드 위치 변경에 영향 받는 클라우드들의 Position 수정
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 순서 변경 실패', { status: 500 });
     }

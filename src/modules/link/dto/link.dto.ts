@@ -8,8 +8,10 @@ import {
   IsArray,
   IsNotEmpty,
   IsInt,
+  IsIn,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class CreateLinkDto {
   @ApiProperty({ description: '링크의 URL' })
@@ -70,6 +72,7 @@ export class UpdateLinkDto {
 }
 
 export class DeleteLinksDto {
+  @ApiProperty({ description: '삭제할 링크의 ID 배열' })
   @IsArray()
   @IsNotEmpty({ each: true })
   @IsInt({ each: true })
@@ -77,13 +80,63 @@ export class DeleteLinksDto {
 }
 
 export class UpdateLinksCloudDto {
+  @ApiProperty({ description: '클라우드 이동처리할 ID 배열' })
   @IsArray()
   @IsNotEmpty({ each: true })
   @IsInt({ each: true })
   linkIds!: number[];
 
+  @ApiProperty({ description: '클라우드 ID' })
   @IsNotEmpty()
   @IsInt()
   @IsOptional()
   cloudId!: number | null;
+}
+
+export class GetLinksDto {
+  @ApiProperty({ description: '시작 위치', example: 10 })
+  @IsInt()
+  @Transform(({ value }) => Number(value)) //💡 @Transform은 값이 있으면 변환을 할뿐 기본값을 설정하는 것은 아니다. 변형 시키려면 ValidationPipe를 우측처럼 설정해야한다. -> new ValidationPipe({ transform: true })
+  offset!: number;
+
+  @ApiProperty({ description: '한 번에 가져올 링크의 수', example: 20 })
+  @IsInt()
+  @Transform(({ value }) => Number(value))
+  limit!: number;
+
+  @ApiProperty({ description: '생성일 기준 정렬 방식', required: false, default: 'DESC', example: 'ASC' })
+  @IsIn(['ASC', 'DESC'])
+  @IsOptional()
+  sort: 'DESC' | 'ASC' = 'DESC';
+
+  @ApiProperty({ description: '검색어', required: false, example: 'test' })
+  @IsOptional()
+  @IsString()
+  keyword?: string;
+
+  @ApiProperty({ description: '링크 열람 필터', required: false, example: 'true' })
+  @IsOptional()
+  @Transform(({ value }) => (value === 'true' ? true : false))
+  isRead?: boolean;
+
+  @ApiProperty({ description: '내 컬렉션 필터', required: false, example: 'true' })
+  @IsOptional()
+  @Transform(({ value }) => (value === 'true' ? true : false))
+  myCollection?: boolean;
+
+  @ApiProperty({
+    description: '클라우드 필터 - 클라우드 미지정의 경우 0, 클라우드별로 찾고싶은 경우 클라우드 아이디',
+    required: false,
+    example: '0',
+  })
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => Number(value))
+  cloudId?: number;
+}
+
+export class GetAnalyzeDto {
+  @ApiProperty({ description: 'URL', example: 'https://www.naver.com' })
+  @IsString()
+  url!: string;
 }
