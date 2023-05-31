@@ -9,11 +9,23 @@ import { CustomLogger } from 'src/core/logger/logger.provider';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api'); // endpoint prefix
   const configService = app.get(ConfigService);
 
+  // endpoint prefix
+  app.setGlobalPrefix('api');
+
+  // Logging 설정 (http 요청 로깅)
   const logger = app.get(CustomLogger);
-  app.use(logger.createMorganMiddleware()); // 로깅 (morgan 미들웨어)
+  app.use(logger.createMorganMiddleware());
+
+  // AuthGuard 설정
+  const authService = app.get(AuthService);
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new AuthGuard(authService, reflector));
+
+  // Swagger 설정
+  const swaggerID = configService.get('SWAGGER_USER');
+  const swaggerPW = configService.get('SWAGGER_PASSWORD');
 
   const config = new DocumentBuilder()
     .setTitle('Linkloud')
@@ -23,15 +35,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
 
-  const authService = app.get(AuthService);
-  const reflector = app.get(Reflector);
-
-  app.useGlobalGuards(new AuthGuard(authService, reflector));
-
-  const swaggerID = configService.get('SWAGGER_USER');
-  const swaggerPW = configService.get('SWAGGER_PASSWORD');
-
-  // Swagger 설정
   app.use(
     ['/docs', '/docs-json'],
     basicAuth({

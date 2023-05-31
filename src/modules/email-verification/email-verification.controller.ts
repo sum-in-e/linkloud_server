@@ -1,9 +1,9 @@
 import { Controller, Post, Query, UseInterceptors, UsePipes } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
-import { TransactionManager } from 'src/core/decorators/transaction.decorator';
+import { TransactionManager } from 'src/core/tansaction/decorators/transaction.decorator';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
-import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
+import { TransactionInterceptor } from 'src/core/tansaction/interceptors/transaction.interceptor';
 
 import {
   EmailVerificationConfirmDto,

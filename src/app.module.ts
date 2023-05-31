@@ -16,6 +16,7 @@ import { CloudModule } from 'src/modules/cloud/cloud.module';
 import { AuthModule } from 'src/core/auth/auth.module';
 import { GroupsModule } from './modules/group/group.module';
 import { LoggerModule } from 'src/core/logger/logger.module';
+import { SentryModule } from 'src/common/sentry/sentry.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { LoggerModule } from 'src/core/logger/logger.module';
     AuthModule,
     GroupsModule,
     LoggerModule,
+    SentryModule,
   ],
   controllers: [AppController],
   providers: [

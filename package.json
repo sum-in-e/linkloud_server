@@ -29,6 +29,8 @@
     "@nestjs/swagger": "^6.3.0",
     "@nestjs/typeorm": "^9.0.0-next.2",
     "@sendgrid/mail": "^7.7.0",
+    "@sentry/node": "^7.53.1",
+    "@slack/client": "^5.0.2",
     "@types/bcrypt": "^5.0.0",
     "@types/morgan": "^1.9.4",
     "@types/winston": "^2.4.4",

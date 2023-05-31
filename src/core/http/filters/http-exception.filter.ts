@@ -3,10 +3,21 @@ import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { HttpResponseBuilder } from 'src/core/http/util/http-response-builder';
 import { CustomLogger } from 'src/core/logger/logger.provider';
+import { SentryProvider } from 'src/common/sentry/sentry.provider';
+import { ConfigService } from '@nestjs/config';
 
 @Catch() // 모든 예외를 캐치
 export class HttpExceptionFilter {
-  constructor(private readonly httpResponseBuilder: HttpResponseBuilder, private readonly logger: CustomLogger) {}
+  private readonly mode: string;
+
+  constructor(
+    private readonly httpResponseBuilder: HttpResponseBuilder,
+    private readonly logger: CustomLogger,
+    private readonly sentry: SentryProvider,
+    private readonly configService: ConfigService,
+  ) {
+    this.mode = this.configService.get('MODE', 'development');
+  }
 
   catch(exception: CustomHttpException | HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -18,6 +29,7 @@ export class HttpExceptionFilter {
     let message: string = exception.message;
     let data: unknown | null = null;
 
+    const isProduction = this.mode === 'production';
     const method = request.method;
     const url = request.url;
     const body = request.body ? `${JSON.stringify(request.body)}` : '-';
@@ -37,7 +49,9 @@ export class HttpExceptionFilter {
         //  정의하지 않은 HttpException일 경우
         code = ResponseCode.UNKNOWN_ERROR;
 
-        this.logger.error(`[${method}] ${url} \nException:${exception.message} \nbody:${body}`); // 👾로깅
+        // 👾 로깅
+        if (isProduction) this.sentry.captureException(exception);
+        this.logger.error(`[${method}] ${url} \nException:${exception.message} \nbody:${body}`);
       }
     } else {
       // * HttpException 타입이 아닐 경우 -> 500에러
@@ -45,7 +59,9 @@ export class HttpExceptionFilter {
       code = ResponseCode.INTERNAL_SERVER_ERROR;
       message = 'Internal Server Error';
 
-      this.logger.error(`[${method}] ${url} \nbody:${body}`); // 👾로깅
+      // 👾 로깅
+      if (isProduction) this.sentry.captureException(exception);
+      this.logger.error(`[${method}] ${url} \nbody:${body}`);
     }
 
     response.status(status).json(this.httpResponseBuilder.buildErrorResponse(status, message, code, data));
