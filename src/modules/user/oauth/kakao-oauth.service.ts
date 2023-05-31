@@ -46,8 +46,9 @@ export class KakaoOauthService {
       return { email, sub };
     } catch (error) {
       throw new CustomHttpException(
-        ResponseCode.SIGN_UP_FAILED,
+        ResponseCode.INTERNAL_SERVER_ERROR,
         '카카오 서버와의 연동 실패로 회원가입에 실패하였습니다.',
+        { status: 500 },
       );
     }
   }

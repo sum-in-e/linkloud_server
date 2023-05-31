@@ -4,7 +4,7 @@ import { Brackets, QueryRunner, Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
 import { Link } from 'src/modules/link/entities/link.entity';
-import { CreateLinkDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
+import { CreateLinkDto, GetLinksDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
 import { guideLinks } from 'src/modules/link/constants/guide-links.constant';
 
 @Injectable()
@@ -52,35 +52,34 @@ export class LinkRepository {
       .getMany();
   }
 
-  async findLinksByParams(
-    sort: string,
-    limit: number,
-    offset: number,
-    user: User,
-    keyword?: string,
-    isRead?: string,
-    myCollection?: string,
-    cloudId?: string,
-  ): Promise<{ linkCount: number; links: Link[] }> {
-    const order = sort === 'DESC' ? 'DESC' : 'ASC';
+  async findLinksByParams(user: User, query: GetLinksDto): Promise<{ linkCount: number; links: Link[] }> {
+    const { sort, limit, offset, keyword, isRead, myCollection, cloudId } = query;
 
-    let query = this.linkRepository
+    let queryBuilder = this.linkRepository
       .createQueryBuilder('link')
-      .leftJoinAndSelect('link.cloud', 'cloud') // cloud 관계를 로드
+      .leftJoinAndSelect('link.cloud', 'cloud')
       .where('link.user.id = :userId', { userId: user.id });
 
     if (isRead !== undefined) {
-      query = query.andWhere('link.isRead = :isRead', { isRead: isRead === 'true' });
+      queryBuilder = queryBuilder.andWhere('link.isRead = :isRead', { isRead });
     }
 
     if (myCollection !== undefined) {
-      query = query.andWhere('link.isInMyCollection = :isInMyCollection', {
-        isInMyCollection: myCollection === 'true',
+      queryBuilder = queryBuilder.andWhere('link.isInMyCollection = :isInMyCollection', {
+        isInMyCollection: myCollection,
       });
     }
 
+    if (cloudId !== undefined) {
+      if (cloudId === 0) {
+        queryBuilder = queryBuilder.andWhere('link.cloud.id IS NULL');
+      } else {
+        queryBuilder = queryBuilder.andWhere('link.cloud.id = :cloudId', { cloudId });
+      }
+    }
+
     if (keyword !== undefined && keyword !== '') {
-      query = query.andWhere(
+      queryBuilder = queryBuilder.andWhere(
         new Brackets((qb) => {
           qb.where('link.title LIKE :keyword', { keyword: `%${keyword}%` }) // 제목에 키워드가 포함된 경우
             .orWhere('link.url LIKE :keyword', { keyword: `%${keyword}%` }); // URL에 키워드가 포함된 경우
@@ -88,16 +87,8 @@ export class LinkRepository {
       );
     }
 
-    if (cloudId !== undefined) {
-      if (cloudId === '0') {
-        query = query.andWhere('link.cloud.id IS NULL');
-      } else {
-        query = query.andWhere('link.cloud.id = :cloudId', { cloudId });
-      }
-    }
-
-    const linkCount = await query.getCount(); // 별도의 쿼리 빌더를 생성하여 linkCount를 계산한다. links에 같이 count 까지 나오게하면 skip, take에 영향받은 count가 받아지기 때문에
-    const links = await query.orderBy('link.createdAt', order).skip(offset).take(limit).getMany();
+    const linkCount = await queryBuilder.getCount(); // 별도의 쿼리 빌더를 생성하여 linkCount를 계산한다. links에 같이 count 까지 나오게하면 skip, take에 영향받은 count가 받아지기 때문에
+    const links = await queryBuilder.orderBy('link.createdAt', sort).skip(offset).take(limit).getMany();
 
     return { linkCount, links };
   }

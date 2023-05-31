@@ -1,9 +1,9 @@
 import { QueryRunner } from 'typeorm';
 import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors, Req, Delete } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
+import { KakaoCodeDto, KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
 import { SignUpPipe } from 'src/modules/user/pipes/signup.pipe';
 import { KakaoOauthService } from 'src/modules/user/oauth/kakao-oauth.service';
 import { UserService } from 'src/modules/user/user.service';
@@ -14,6 +14,7 @@ import { TransactionInterceptor } from 'src/core/interceptors/transaction.interc
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { LinkService } from 'src/modules/link/link.service';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
+import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 
 @ApiTags('유저 APIs')
 @Controller('user')
@@ -46,6 +47,7 @@ export class UserController {
   }
 
   @ApiOperation({ summary: '이메일 회원가입' })
+  @ApiResponse({ status: 400, description: `${ResponseCode.NOT_VERIFIED_EMAIL} , ${ResponseCode.EMAIL_ALREADY_EXIST}` })
   @Post('signup')
   @UsePipes(SignUpPipe)
   @UseInterceptors(TransactionInterceptor)
@@ -70,6 +72,11 @@ export class UserController {
   @ApiOperation({
     summary: '이메일 로그인',
   })
+  @ApiResponse({
+    status: 400,
+    description: `${ResponseCode.SIGNED_BY_KAKAO}, ${ResponseCode.DELETED_USER}, ${ResponseCode.WRONG_PASSWORD}`,
+  })
+  @ApiResponse({ status: 404, description: ResponseCode.EMAIL_NOT_EXIST })
   @Post('login')
   @IsPublic()
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) response: Response) {
@@ -88,11 +95,12 @@ export class UserController {
     summary: '카카오 회원가입 - 회원 정보 가져오기 (카카오 로그인 API 리다이렉트 URI)',
     description: '카카오 서버로부터 유저 정보를 받아와 kakaoVerificationInfo에 저장합니다.',
   })
+  @ApiResponse({ status: 400, description: ResponseCode.EMAIL_ALREADY_EXIST })
   @Get('signup/oauth-kakao')
   @DisableSuccessInterceptor()
   @IsPublic()
-  async kakaoOauthSignupCallback(@Query('code') code: string, @Res({ passthrough: true }) response: Response) {
-    const { email, sub } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_SIGNUP_REDIRECT_URI);
+  async kakaoOauthSignupCallback(@Query() query: KakaoCodeDto, @Res({ passthrough: true }) response: Response) {
+    const { email, sub } = await this.kakaoOauthService.getUserInfo(query.code, this.KAKAO_SIGNUP_REDIRECT_URI);
 
     await this.userService.createKakaoVerificationInfo(email, sub); // 회원 가입 완료를 위해서는 클라이언트로부터 닉네임 입력과 약관 동의를 받아야하므로 회원가입 완료 API를 분리함
 
@@ -105,6 +113,11 @@ export class UserController {
     description:
       '회원가입 완료를 위해 유저에게 추가적으로 닉네임 입력과 약관 동의를 받아 호출하는 API로 kakaoVerificationInfo에 저장된 유저 정보와 대조하여 인증을 확인한 후, 회원가입 완료 후 쿠키에 엑세스토큰과 리프레시토큰을 저장합니다.',
   })
+  @ApiResponse({
+    status: 400,
+    description: `${ResponseCode.EMAIL_ALREADY_EXIST}, ${ResponseCode.TERMS_NOT_AGREED}, ${ResponseCode.INVALID_USER_NAME_FORMAT}, ${ResponseCode.DELETED_USER}`,
+  })
+  @ApiResponse({ status: 404, description: ResponseCode.KAKAO_VERIFICATION_INFO_NOT_EXIST })
   @Post('signup/kakao')
   @UseInterceptors(TransactionInterceptor)
   @IsPublic()
@@ -130,11 +143,16 @@ export class UserController {
     description:
       '카카오 서버로부터 유저 정보를 받아 인증하고 쿠키에 엑세스토큰과 리프레시토큰을 저장합니다. 카카오 회원가입과 달리 하나의 API로 로그인까지 완료됩니다.',
   })
+  @ApiResponse({
+    status: 400,
+    description: `${ResponseCode.SIGNED_BY_EMAIL}, ${ResponseCode.DELETED_USER}`,
+  })
+  @ApiResponse({ status: 404, description: ResponseCode.EMAIL_NOT_EXIST })
   @Get('login/oauth-kakao')
   @DisableSuccessInterceptor()
   @IsPublic()
-  async kakaoOauthLoginCallback(@Query('code') code: string, @Res({ passthrough: true }) response: Response) {
-    const { email } = await this.kakaoOauthService.getUserInfo(code, this.KAKAO_LOGIN_REDIRECT_URI);
+  async kakaoOauthLoginCallback(@Query() query: KakaoCodeDto, @Res({ passthrough: true }) response: Response) {
+    const { email } = await this.kakaoOauthService.getUserInfo(query.code, this.KAKAO_LOGIN_REDIRECT_URI);
 
     const user = await this.userService.verifyKakaoUser(email);
 

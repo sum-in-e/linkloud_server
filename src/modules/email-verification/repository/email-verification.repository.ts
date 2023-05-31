@@ -14,12 +14,16 @@ export class EmailVerificationRepository {
   /**
    * email_verification 테이블에 이메일 인증을 위한 정보를 저장합니다.
    */
-  async createEmailVerification(email: string, verification_code: string): Promise<EmailVerification> {
+  async createEmailVerification(
+    email: string,
+    verification_code: string,
+    queryRunner: QueryRunner,
+  ): Promise<EmailVerification> {
     const emailVerification = new EmailVerification();
     emailVerification.email = email;
     emailVerification.verification_code = verification_code;
 
-    return await this.emailVerificationRepository.save(emailVerification);
+    return await queryRunner.manager.save(emailVerification);
   }
 
   /**

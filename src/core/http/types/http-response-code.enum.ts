@@ -13,9 +13,9 @@ export enum ResponseCode {
   SIGNED_BY_KAKAO = 'SIGNED_BY_KAKAO', // 카카오로 가입된 계정임
   SIGNED_BY_EMAIL = 'SIGNED_BY_EMAIL', // 이메일로 가입된 계정임
   INVALID_EMAIL_FORMAT = 'INVALID_EMAIL_FORMAT', // 이메일 형식 이상
+  KAKAO_VERIFICATION_INFO_NOT_EXIST = 'KAKAO_VERIFICATION_INFO_NOT_EXIST', // 카카오 인증 정보를 DB에서 못 찾음
 
-  FAILED_TO_SEND_EMAIL = 'FAILED_TO_SEND_EMAIL', // Sendgrid로 이메일 전송 실패
-  VERIFICATION_INFO_NOT_EXITS = 'VERIFICATION_INFO_NOT_EXITS', // 이메일과 인증번호가 일치하는 데이터 못찾음
+  VERIFICATION_INFO_NOT_EXIST = 'VERIFICATION_INFO_NOT_EXIST', // 이메일과 인증번호가 일치하는 데이터 못찾음
   EXPIRED_VERIFICATION_CODE = 'EXPIRED_VERIFICATION_CODE', // 인증 번호 만료
 
   INVALID_USER_NAME_FORMAT = 'INVALID_USER_NAME_FORMAT', // 닉네임 형식 이상
@@ -24,9 +24,6 @@ export enum ResponseCode {
   WRONG_PASSWORD = 'WRONG_PASSWORD', // 비밀번호 틀림
 
   TERMS_NOT_AGREED = 'TERMS_NOT_AGREED', // 약관 동의 안 함
-
-  SIGN_UP_FAILED = 'SIGN_UP_FAILED', // 회원가입 실패
-  LOGIN_FAILED = 'LOGIN_FAILED', // 로그인 실패
 
   DELETED_USER = 'DELETED_USER', // 회원탈퇴된 계정
 

@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   Param,
@@ -13,12 +12,20 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/core/auth/decorator/is-public.decorator';
 import { TransactionManager } from 'src/core/decorators/transaction.decorator';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
+import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
-import { CreateLinkDto, DeleteLinksDto, UpdateLinkDto, UpdateLinksCloudDto } from 'src/modules/link/dto/link.dto';
+import {
+  CreateLinkDto,
+  DeleteLinksDto,
+  GetAnalyzeDto,
+  GetLinksDto,
+  UpdateLinkDto,
+  UpdateLinksCloudDto,
+} from 'src/modules/link/dto/link.dto';
 import { LinkAnalyzeService } from 'src/modules/link/link-analyze.service';
 import { LinkService } from 'src/modules/link/link.service';
 import { UpdateLinkPipe } from 'src/modules/link/pipes/update-link.pipe';
@@ -30,13 +37,16 @@ export class LinkController {
   constructor(private readonly linkService: LinkService, private readonly linkAnalyzeService: LinkAnalyzeService) {}
 
   @ApiOperation({ summary: '메타태그 기반 링크 데이터 추출' })
+  @ApiResponse({ status: 400, description: ResponseCode.INVALID_URL })
   @Get('analyze')
   @IsPublic()
-  async analyze(@Query('url') url: string) {
-    return await this.linkAnalyzeService.linkAnalyze(url);
+  async getAnalyze(@Query() query: GetAnalyzeDto) {
+    return await this.linkAnalyzeService.linkAnalyze(query.url);
   }
 
   @ApiOperation({ summary: '링크 추가' })
+  @ApiResponse({ status: 400, description: ResponseCode.INVALID_PARAMS })
+  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
   @Post('')
   async createLink(@Body(ValidationPipe) body: CreateLinkDto, @Req() request: RequestWithUser) {
     // url, title은 필수라서 유저가 보낸 데이터를 검증해야하겠지만 클라이언트에서 title 없으면 저장 못 하게 할거고, url은 애초에 linkAnalyze api에서 내려주는거 그대로 가져오는거라 유저가 수정 못 하는 값이라 에러가 나면 뭔가 이상하게 동작하는 것임. 그래서 굳이 특정 property 지정할 필요 없이 전부 BadRequestError 주면 되서 그냥 validationPipe를 사용함
@@ -49,68 +59,14 @@ export class LinkController {
   }
 
   @ApiOperation({
-    summary: '링크 리스트 조회',
+    summary: '링크 리스트 조회(+검색)',
     description: 'limit, offset 외 아무 쿼리도 보내지 않으면 전체 조회',
   })
   @Get('list')
-  @ApiQuery({ name: 'keyword', type: String, description: '검색어', required: false })
-  @ApiQuery({
-    name: 'isRead',
-    type: String,
-    description: '링크 열람 여부',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'myCollection',
-    type: String,
-    description: '내 컬렉션 저장 여부',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'cloudId',
-    type: String,
-    description: '클라우드 지정 - 클라우드 미지정의 경우 0, 클라우드별로 찾고싶은 경우 클라우드 아이디',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'sort',
-    description: '생성일 기준 정렬 순서 - DESC(기본값) | ASC',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    type: Number,
-    description: '한 페이지에 보여줄 링크 개수',
-    required: true,
-  })
-  @ApiQuery({
-    name: 'offset',
-    type: Number,
-    description: '건너뛸 링크 개수',
-    required: true,
-  })
-  async getLinks(
-    @Req() request: RequestWithUser,
-    @Query('sort', new DefaultValuePipe('DESC')) sort: string,
-    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
-    @Query('limit', new DefaultValuePipe(40), ParseIntPipe) limit: number,
-    @Query('keyword', new DefaultValuePipe(undefined)) keyword?: string,
-    @Query('isRead', new DefaultValuePipe(undefined)) isRead?: string,
-    @Query('myCollection', new DefaultValuePipe(undefined)) myCollection?: string,
-    @Query('cloudId', new DefaultValuePipe(undefined)) cloudId?: string,
-  ) {
+  async getLinks(@Req() request: RequestWithUser, @Query(new ValidationPipe({ transform: true })) query: GetLinksDto) {
     const user = request.user;
 
-    const { linkCount, links } = await this.linkService.getLinks(
-      sort,
-      limit,
-      offset,
-      user,
-      keyword,
-      isRead,
-      myCollection,
-      cloudId,
-    );
+    const { linkCount, links } = await this.linkService.getLinks(user, query);
 
     return {
       count: linkCount,
@@ -134,6 +90,7 @@ export class LinkController {
   }
 
   @ApiOperation({ summary: '링크 상세 정보 조회' })
+  @ApiResponse({ status: 404, description: ResponseCode.LINK_NOT_FOUND })
   @Get(':id')
   async getLinkDetail(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
     const user = request.user;
@@ -161,6 +118,7 @@ export class LinkController {
   }
 
   @ApiOperation({ summary: '선택한 링크 열람 처리' })
+  @ApiResponse({ status: 404, description: ResponseCode.LINK_NOT_FOUND })
   @Patch(':id/read')
   async updateLinkRead(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
     const user = request.user;
@@ -169,6 +127,8 @@ export class LinkController {
   }
 
   @ApiOperation({ summary: '선택한 링크의 클라우드 일괄 이동' })
+  @ApiResponse({ status: 400, description: ResponseCode.INVALID_PARAMS })
+  @ApiResponse({ status: 404, description: `${ResponseCode.LINK_NOT_FOUND}, ${ResponseCode.CLOUD_NOT_FOUND}` })
   @Patch('ids/cloud')
   @UseInterceptors(TransactionInterceptor)
   async updateLinksCloud(
@@ -182,6 +142,7 @@ export class LinkController {
   }
 
   @ApiOperation({ summary: '선택한 링크 일괄 제거' })
+  @ApiResponse({ status: 404, description: ResponseCode.LINK_NOT_FOUND })
   @Delete('ids/delete')
   @UseInterceptors(TransactionInterceptor)
   async deleteLinks(
@@ -196,6 +157,8 @@ export class LinkController {
   }
 
   @ApiOperation({ summary: '링크 정보 수정' })
+  @ApiResponse({ status: 400, description: ResponseCode.INVALID_PARAMS })
+  @ApiResponse({ status: 404, description: `${ResponseCode.LINK_NOT_FOUND}, ${ResponseCode.CLOUD_NOT_FOUND}` })
   @Patch(':id')
   async updateLink(
     @Param('id', ParseIntPipe) id: number,
@@ -228,6 +191,7 @@ export class LinkController {
   }
 
   @ApiOperation({ summary: '링크 제거' })
+  @ApiResponse({ status: 404, description: ResponseCode.LINK_NOT_FOUND })
   @Delete(':id')
   async deleteLink(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
     const user = request.user;
