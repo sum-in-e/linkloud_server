@@ -9,14 +9,14 @@ export class typeORMConfig implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
-    const mode = this.configService.get('MODE', 'develop');
+    const mode = this.configService.get('MODE', 'development');
     const dbHost = this.configService.getOrThrow('DB_HOST');
     const dbPort = +this.configService.get('DB_PORT', 3306); // int 변환을 위해 + 적용
     const dbUsername = this.configService.get('DB_USERNAME');
     const dbPassword = this.configService.getOrThrow('DB_PASSWORD');
     const dbName = this.configService.get('DB_NAME', 'linkloud');
-    const dbSync = mode === 'develop' ? 'true' : 'false';
-    const dbLogging = mode === 'develop' ? 'false' : 'true';
+    const dbSync = mode === 'development' ? 'true' : 'false';
+    const dbLogging = mode === 'development' ? 'false' : 'true';
 
     return {
       type: 'mysql',
