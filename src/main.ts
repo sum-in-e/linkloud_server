@@ -11,9 +11,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // endpoint prefix
-  app.setGlobalPrefix('api');
-
   // Logging 설정 (http 요청 로깅)
   const logger = app.get(CustomLogger);
   app.use(logger.createMorganMiddleware());
