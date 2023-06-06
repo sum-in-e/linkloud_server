@@ -33,7 +33,7 @@ jobs:
                 - name: MODE
                   value: production
                 - name: PORT
-                  value: 443
+                  value: 8000
                 - name: TZ
                   value: Asia/Seoul
                 - name: DB_HOST
