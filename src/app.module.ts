@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
-import { typeORMConfig } from 'src/configs/typeorm.config';
+import { typeORMConfig } from 'src/configs/ormconfig';
 import { UserModule } from 'src/modules/user/user.module';
 import { EmailVerificationModule } from 'src/modules/email-verification/email-verification.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
