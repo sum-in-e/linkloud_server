@@ -23,16 +23,19 @@ export class Link {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   thumbnailUrl!: string | null; // og:image 있으면 할당하고 없으면 null -> 클라이언트에서 이미지 저장하고 null이면 할당
-  // TODO: og:image cdn으로 해서 클라우드에 올리고 url 할당하고 관련된 부분 싹바꿀까
+  // TODO: link analyze에서 기본이미지 url 반환 할거니까 url null 지우기
 
   @Column({ type: 'text' })
   title!: string;
 
-  @Column({ type: 'text', default: '' })
+  @Column({ type: 'text' })
   description!: string; // 글자수 제한이 없으니 클라이언트에서 보여줄 때 ellipsis 처리 필요
 
-  @Column({ type: 'text', default: '' })
-  memo!: string; // 타입을 TEXT로 하되 클라이언트에서 글자 제한을 둘까?
+  @Column({ type: 'text' })
+  memo = ''; // 타입을 TEXT로 하되 클라이언트에서 글자 제한을 둘까?
+
+  @Column({ type: 'text' })
+  test = ''; // 타입을 TEXT로 하되 클라이언트에서 글자 제한을 둘까?
 
   @Column({ default: false })
   isInMyCollection!: boolean;

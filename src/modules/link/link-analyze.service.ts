@@ -17,7 +17,7 @@ export class LinkAnalyzeService {
     const result = {
       url,
       title: meta['og:title'] || url,
-      thumbnailUrl: meta['og:image'] || null,
+      thumbnailUrl: meta['og:image'] || null, // TODO: 기본이미지 url 넣기
       description: meta['og:description'] || url,
     };
 
