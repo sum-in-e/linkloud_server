@@ -21,11 +21,11 @@ jobs:
           token: ${{ secrets.CLOUDTYPE_TOKEN }}
           project: linkloud/linkloud_backend
           stage: main
-          yaml: >
+          yaml:
             name: linkloud-server
             app: node@16
             options:
-              ports: "443"
+              ports: '443'
               install: yarn
               build: yarn build
               start: yarn start:prod
