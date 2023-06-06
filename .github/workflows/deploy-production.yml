@@ -15,17 +15,15 @@ jobs:
         with:
           token: ${{ secrets.CLOUDTYPE_TOKEN }}
           ghtoken: ${{ secrets.GHP_ACC_TOKEN }}
-          scope: cloudtype
       - name: Deploy server to cloudtype
         uses: cloudtype-github-actions/deploy@v1
         with:
           token: ${{ secrets.CLOUDTYPE_TOKEN }}
           project: linkloud/linkloud_backend
-          yaml: |-
+          stage: main
+          yaml: >
             name: linkloud-server
             app: node@16
-            options:
-              nodeversion: "16"
             context:
               git:
                 ref: ${{ github.ref }}
