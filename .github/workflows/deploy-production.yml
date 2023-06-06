@@ -25,7 +25,7 @@ jobs:
             name: linkloud-server
             app: node@16
             options:
-              ports: "443"
+              ports: "8000"
               install: yarn
               build: yarn build
               start: yarn start:prod
@@ -35,37 +35,37 @@ jobs:
                 - name: PORT
                   value: 8000
                 - name: TZ
-                  value: Asia/Seoul
+                  var: TZ
                 - name: DB_HOST
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_DB_HOST }}
+                  secret: PROD_DB_HOST
                 - name: DB_PORT
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_DB_PORT }}
+                  secret: PROD_DB_PORT
                 - name: DB_USERNAME
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_DB_USERNAME }}
+                  secret: PROD_DB_USERNAME
                 - name: DB_PASSWORD
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_DB_PASSWORD }}
+                  secret: PROD_DB_PASSWORD
                 - name: DB_NAME
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_DB_NAME }}
+                  secret: PROD_DB_NAME
                 - name: SENDGRID_API_KEY
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_SENDGRID_API_KEY }}
+                  secret: PROD_SENDGRID_API_KEY
                 - name: SWAGGER_USER
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_SWAGGER_USER }}
+                  secret: PROD_SWAGGER_USER
                 - name: SWAGGER_PASSWORD
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_SWAGGER_PASSWORD }}
+                  secret: PROD_SWAGGER_PASSWORD
                 - name: KAKAO_REST_API_KEY
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_KAKAO_REST_API_KEY }}
+                  secret: PROD_KAKAO_REST_API_KEY
                 - name: KAKAO_SIGNUP_REDIRECT_URI
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_KAKAO_SIGNUP_REDIRECT_URI }}
+                  secret: PROD_KAKAO_SIGNUP_REDIRECT_URI
                 - name: KAKAO_LOGIN_REDIRECT_URI
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_KAKAO_LOGIN_REDIRECT_URI }}
+                  secret: PROD_KAKAO_LOGIN_REDIRECT_URI
                 - name: JWT_SECRET_KEY
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_JWT_SECRET_KEY }}
+                  secret: PROD_JWT_SECRET_KEY
                 - name: LOGZIO_TOKEN
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_LOGZIO_TOKEN }}
+                  secret: PROD_LOGZIO_TOKEN
                 - name: SENTRY_DSN
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_SENTRY_DSN }}
+                  secret: PROD_SENTRY_DSN
                 - name: SLACK_WEBHOOK_URL_FOR_SENTRY
-                  value: ${{ secrets.CLOUDTYPE_PROD_ENV_SLACK_WEBHOOK_URL_FOR_SENTRY }}
+                  secret: PROD_SLACK_WEBHOOK_URL_FOR_SENTRY
             context:
               git:
                 ref: ${{ github.ref }}
