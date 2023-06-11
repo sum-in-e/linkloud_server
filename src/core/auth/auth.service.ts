@@ -101,6 +101,8 @@ export class AuthService {
       httpOnly: true,
       secure: this.MODE === 'production' ? true : false,
       sameSite: 'lax',
+      path: '/', // 설정하지 않을 경우, 기본적으로 쿠키가 설정된 페이지의 경로가 적용되므로 '/'으로 지정해서 서비스 전체 요청에서 사용할 수 있게 해야함(안하면 /login 페이지에서 쿠키 설정 요청하면 /login으로 설정되어버림)
+      domain: this.MODE === 'production' ? 'linkloud.co.kr' : 'localhost', // 설정하지 않으면, 쿠키가 설정된 도메인이 쿠키의 도메인으로 설정되서 linkloud.co.kr에서 보내면 linkloud.co.kr로 설정된다. 하지만 명확하게 도메인을 설정해줘야 이 도메인과 하위 도메인에서만 쿠키를 사용할 수 있게 되므로 보안을 위해 설정하는 것이 좋다.
     } as CookieOptions;
 
     const payload = { userId, email };
