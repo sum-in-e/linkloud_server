@@ -1,36 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
+    <title>링클라우드 회원가입 인증번호 이메일 템플릿</title>
     <style>
-      /* 스타일 코드 */
-      /* 이메일 템플릿 작업 전 임시 템플릿입니다. */
-      .container {
-        max-width: 600px;
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+      html,
+      body {
+        width: 100%;
         margin: 0 auto;
-        font-family: Arial, sans-serif;
-        font-size: 16px;
-        line-height: 1.5;
-        color: #333333;
       }
-      .code {
-        font-size: 24px;
-        font-weight: bold;
-        color: #004499;
-        text-align: center;
-        margin: 20px 0;
-        padding: 10px;
-        border: 1px solid #cccccc;
+      a img {
+        border: none;
+      }
+      .ReadMsgBody {
+        width: 100%;
+      }
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass * {
+        line-height: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
       }
     </style>
+    <style type="text/css"></style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   </head>
   <body>
-    <div class="container">
-      <h1>이메일 인증 코드</h1>
-      <p>안녕하세요. 회원가입을 위해 이메일 인증을 진행해주세요.</p>
-      <p>아래의 인증 코드를 입력하시면 인증이 완료됩니다.</p>
-      <div class="code">${verification_code}</div>
-      <p>인증 코드는 발급 후 10분간 유효합니다.</p>
-      <p>감사합니다.</p>
-    </div>
+    <table width="100%" cellspacing="0" cellpadding="0">
+      <tbody style="width: 100%">
+        <tr align="center">
+          <td style="padding-top: 60px; padding-bottom: 40px; background-color: #ffffff">
+            <img
+              src="https://res.cloudinary.com/dqcgvbbv7/image/upload/v1686554950/linkloud/logo_v_avimgi.png"
+              alt="linkloud logo"
+              width="152"
+            />
+          </td>
+        </tr>
+        <tr align="center">
+          <td style="padding-top: 10px; padding-bottom: 40px" background-color: #ffffff;>
+            <table>
+              <tr align="center">
+                <td style="padding-bottom: 10px">
+                  <span
+                    style="
+                      font-family: Pretendard, -apple-system, sans-serif;
+                      font-size: 22px;
+                      font-weight: 600;
+                      color: #212121;
+                    "
+                  >
+                    링클라우드 이용을 위한 이메일 인증
+                  </span>
+                </td>
+              </tr>
+              <tr align="center">
+                <td style="padding-bottom: 24px">
+                  <span
+                    style="
+                      font-family: Pretendard, -apple-system, sans-serif;
+                      font-size: 16px;
+                      font-weight: 400;
+                      line-height: 24px;
+                      white-space: nowrap;
+                      color: #757575;
+                    "
+                  >
+                    링클라우드 서비스를 이용하기 위해
+                    <br />
+                    이메일 인증이 필요해요.
+                    <br />
+                    아래의 인증 번호를 입력해 주세요!
+                  </span>
+                </td>
+              </tr>
+              <tr align="center">
+                <td style="max-width: 167px">
+                  <div
+                    class="code"
+                    style="
+                      display: inline-block;
+                      padding-top: 15px;
+                      padding-bottom: 15px;
+                      padding-left: 60px;
+                      padding-right: 60px;
+                      border-radius: 48px;
+                      background-color: #000dff;
+                    "
+                    rel="noreferrer noopener"
+                  >
+                    <span
+                      style="
+                        font-family: Pretendard, -apple-system, sans-serif;
+                        font-size: 18px;
+                        font-weight: 500;
+                        color: white;
+                      "
+                      >${verification_code}</span
+                    >
+                  </div>
+                  <div class="code" style="padding-top: 15px" rel="noreferrer noopener">
+                    <span style="font-family: Pretendard, -apple-system, sans-serif; font-size: 10px; color: #757575"
+                      >본 이메일은 회신이 불가능합니다.
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>
