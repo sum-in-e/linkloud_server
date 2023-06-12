@@ -66,6 +66,10 @@ jobs:
                   secret: PROD_SENTRY_DSN
                 - name: SLACK_WEBHOOK_URL_FOR_SENTRY
                   secret: PROD_SLACK_WEBHOOK_URL_FOR_SENTRY
+                - name: CLIENT_URL
+                  secret: PROD_CLIENT_URL
+                - name: HOST
+                  secret: PROD_HOST
             context:
               git:
                 ref: ${{ github.ref }}

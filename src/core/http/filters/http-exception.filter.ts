@@ -50,7 +50,9 @@ export class HttpExceptionFilter {
         code = ResponseCode.UNKNOWN_ERROR;
 
         // 👾 로깅
-        if (isProduction) this.sentry.captureException(exception);
+        if (isProduction) {
+          this.sentry.captureException(exception);
+        }
         this.logger.error(`[${method}] ${url} \nException:${exception.message} \nbody:${body}`);
       }
     } else {
@@ -60,7 +62,9 @@ export class HttpExceptionFilter {
       message = 'Internal Server Error';
 
       // 👾 로깅
-      if (isProduction) this.sentry.captureException(exception);
+      if (isProduction) {
+        this.sentry.captureException(exception);
+      }
       this.logger.error(`[${method}] ${url} \nbody:${body}`);
     }
 

@@ -1,8 +1,8 @@
 import { QueryRunner } from 'typeorm';
 import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors, Req, Delete } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
+import { Response, CookieOptions } from 'express';
 import { KakaoCodeDto, KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.dto';
 import { SignUpPipe } from 'src/modules/user/pipes/signup.pipe';
 import { KakaoOauthService } from 'src/modules/user/oauth/kakao-oauth.service';
@@ -15,12 +15,17 @@ import { TransactionManager } from 'src/core/tansaction/decorators/transaction.d
 import { LinkService } from 'src/modules/link/link.service';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
+import * as querystring from 'querystring';
 
 @ApiTags('유저 APIs')
 @Controller('user')
 export class UserController {
+  private readonly KAKAO_REST_API_KEY: string;
   private readonly KAKAO_SIGNUP_REDIRECT_URI: string;
   private readonly KAKAO_LOGIN_REDIRECT_URI: string;
+  private readonly CLIENT_URL: string;
+  private readonly HOST: string;
+  private readonly MODE: string;
 
   constructor(
     private readonly userService: UserService,
@@ -29,8 +34,12 @@ export class UserController {
     private readonly kakaoOauthService: KakaoOauthService,
     private readonly configService: ConfigService,
   ) {
+    this.KAKAO_REST_API_KEY = this.configService.getOrThrow('KAKAO_REST_API_KEY');
     this.KAKAO_SIGNUP_REDIRECT_URI = this.configService.getOrThrow('KAKAO_SIGNUP_REDIRECT_URI');
     this.KAKAO_LOGIN_REDIRECT_URI = this.configService.getOrThrow('KAKAO_LOGIN_REDIRECT_URI');
+    this.CLIENT_URL = this.configService.getOrThrow('CLIENT_URL');
+    this.HOST = this.configService.getOrThrow('HOST');
+    this.MODE = this.configService.getOrThrow('MODE');
   }
 
   @ApiOperation({ summary: '로그인한 유저 조회' })
@@ -62,6 +71,7 @@ export class UserController {
     await this.userService.updateLastLoginAt(user, queryRunner);
     await this.linkService.createGuideLinks(user, queryRunner); // 가이드용 링크 아이템 생성
     await this.authService.generateTokens(user.id, user.email, response); // 토큰 생성
+    await this.setClientInCookie(response); // 로그인 식별할 수 있는 client_in 쿠키 심기
 
     return {
       email: user.email,
@@ -84,11 +94,50 @@ export class UserController {
 
     await this.userService.updateLastLoginAt(user);
     await this.authService.generateTokens(user.id, user.email, response);
+    await this.setClientInCookie(response);
 
     return {
       email: user.email,
       method: user.method,
     };
+  }
+
+  @ApiOperation({
+    summary: '카카오 - 카카오 인증 코드 가져오기',
+    description:
+      '카카오 서버로부터 카카오 인증 코드를 받아오기 위한 302응답을 반환합니다. 클라이언트에서도 비동기 요청이 아닌 href로 이 엔드포인트에 요청을 보내야합니다.',
+  })
+  @ApiResponse({
+    status: 302,
+    description: `인가 코드를 요청하기 위한 카카오 서버 도메인으로 리다이렉트`,
+  })
+  @ApiQuery({
+    name: 'type',
+    description: `login | signup - 카카오 로그인, 회원가입 시 동일한 API를 호출하되 타입을 전달해 주세요`,
+  })
+  @Get('auth/kakao')
+  @DisableSuccessInterceptor()
+  @IsPublic()
+  async authKakao(@Query('type') type: 'login' | 'signup', @Res({ passthrough: true }) response: Response) {
+    let query;
+
+    const commonQuery = { client_id: this.KAKAO_REST_API_KEY, response_type: 'code' };
+
+    if (type === 'signup') {
+      // 💡각 property를 URL 쿼리 문자열로 인코딩한다. 이렇게하면 주소창에는 인코딩된 쿼리 문자열이 보이지만, 실제로는 원래의 값으로 요청이 전달된다.
+      query = querystring.stringify({
+        ...commonQuery,
+        redirect_uri: this.KAKAO_SIGNUP_REDIRECT_URI,
+      });
+    }
+    if (type === 'login') {
+      query = querystring.stringify({
+        ...commonQuery,
+        redirect_uri: this.KAKAO_LOGIN_REDIRECT_URI,
+      });
+    }
+
+    response.redirect(`https://kauth.kakao.com/oauth/authorize?${query}`);
   }
 
   @ApiOperation({
@@ -105,7 +154,7 @@ export class UserController {
     await this.userService.createKakaoVerificationInfo(email, sub); // 회원 가입 완료를 위해서는 클라이언트로부터 닉네임 입력과 약관 동의를 받아야하므로 회원가입 완료 API를 분리함
 
     // 닉네임, 약관 동의받는 페이지로 유저 리다이렉트
-    response.redirect(`https://linkloud.co.kr/signup/oauth?sign=${sub}`);
+    response.redirect(`${this.CLIENT_URL}/signup/oauth?sign=${sub}`);
   }
 
   @ApiOperation({
@@ -129,8 +178,9 @@ export class UserController {
     const user = await this.userService.createUserByKakao(body, queryRunner);
 
     await this.userService.updateLastLoginAt(user, queryRunner);
-    await this.linkService.createGuideLinks(user, queryRunner); // 가이드용 링크 아이템 생성
-    await this.authService.generateTokens(user.id, user.email, response); // 토큰 생성
+    await this.linkService.createGuideLinks(user, queryRunner);
+    await this.authService.generateTokens(user.id, user.email, response);
+    await this.setClientInCookie(response);
 
     return {
       email: user.email,
@@ -158,8 +208,9 @@ export class UserController {
 
     await this.userService.updateLastLoginAt(user);
     await this.authService.generateTokens(user.id, user.email, response);
+    await this.setClientInCookie(response);
 
-    response.redirect(`https://linkloud.co.kr`); // 로그인 되면 linkloud.co.kr이 마이 클라우드 페이지가 될 것이니 여기로 리다이렉트
+    response.redirect(`${this.CLIENT_URL}/mykloud`);
   }
 
   @ApiOperation({ summary: '로그아웃' })
@@ -167,6 +218,7 @@ export class UserController {
   @IsPublic()
   async logout(@Res({ passthrough: true }) response: Response) {
     await this.authService.expireTokens(response);
+    response.cookie('client_in', '', { maxAge: 0 });
     return {};
   }
 
@@ -184,5 +236,20 @@ export class UserController {
     await this.authService.expireTokens(response);
 
     return {};
+  }
+
+  private async setClientInCookie(response: Response) {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 10);
+
+    const cookieOptions = {
+      expires: date,
+      secure: this.MODE === 'production' ? true : false,
+      sameSite: 'lax',
+      path: '/',
+      domain: this.HOST,
+    } as CookieOptions;
+
+    response.cookie('client_in', 'true', cookieOptions);
   }
 }

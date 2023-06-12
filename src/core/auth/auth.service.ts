@@ -15,6 +15,7 @@ function parseCookies(cookies: string) {
 export class AuthService {
   private readonly JWT_SECRET_KEY: string;
   private readonly MODE: string;
+  private readonly HOST: string;
 
   constructor(
     private readonly userRepository: UserRepository,
@@ -23,6 +24,7 @@ export class AuthService {
   ) {
     this.JWT_SECRET_KEY = this.configService.getOrThrow('JWT_SECRET_KEY');
     this.MODE = this.configService.getOrThrow('MODE');
+    this.HOST = this.configService.getOrThrow('HOST');
   }
 
   /**
@@ -79,6 +81,8 @@ export class AuthService {
               email: decoded.email,
             };
           } catch (error) {
+            response.cookie('client_in', '', { maxAge: 0 });
+
             // 리프레시 토큰 없거나 문제가 있다 -> 에러 던지고 끝 (로그인 필요)
             throw new CustomHttpException(ResponseCode.AUTHENTICATION_EXPIRED, ResponseCode.AUTHENTICATION_EXPIRED, {
               status: 401,
@@ -99,10 +103,10 @@ export class AuthService {
   async generateTokens(userId: number, email: string, response: Response): Promise<void> {
     const cookieOptions = {
       httpOnly: true,
-      secure: this.MODE === 'production' ? true : false,
+      secure: this.MODE === 'production' ? true : false, // https를 통해서만 전송되도록 한다.
       sameSite: 'lax',
-      path: '/', // 설정하지 않을 경우, 기본적으로 쿠키가 설정된 페이지의 경로가 적용되므로 '/'으로 지정해서 서비스 전체 요청에서 사용할 수 있게 해야함(안하면 /login 페이지에서 쿠키 설정 요청하면 /login으로 설정되어버림)
-      domain: this.MODE === 'production' ? 'linkloud.co.kr' : 'localhost', // 설정하지 않으면, 쿠키가 설정된 도메인이 쿠키의 도메인으로 설정되서 linkloud.co.kr에서 보내면 linkloud.co.kr로 설정된다. 하지만 명확하게 도메인을 설정해줘야 이 도메인과 하위 도메인에서만 쿠키를 사용할 수 있게 되므로 보안을 위해 설정하는 것이 좋다.
+      path: '/',
+      domain: this.HOST,
     } as CookieOptions;
 
     const payload = { userId, email };
@@ -126,14 +130,7 @@ export class AuthService {
    * @description 액세스토큰과 리프레시 토큰을 만료시키는 메서드
    */
   async expireTokens(response: Response): Promise<void> {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: this.MODE === 'production' ? true : false,
-      sameSite: 'lax',
-      maxAge: 0,
-    } as CookieOptions;
-
-    response.cookie('act', '', cookieOptions);
-    response.cookie('rft', '', cookieOptions);
+    response.cookie('act', '', { maxAge: 0 });
+    response.cookie('rft', '', { maxAge: 0 });
   }
 }
