@@ -16,29 +16,37 @@ export class EmailVerificationRepository {
    */
   async createEmailVerification(
     email: string,
-    verification_code: string,
+    verificationCode: string,
     queryRunner: QueryRunner,
   ): Promise<EmailVerification> {
     const emailVerification = new EmailVerification();
     emailVerification.email = email;
-    emailVerification.verification_code = verification_code;
+    emailVerification.verificationCode = verificationCode;
 
     return await queryRunner.manager.save(emailVerification);
   }
 
   /**
-   * email_verification 테이블에 있는 컬럼 중 email과 verificationCode가 일치하는 컬럼을 찾습니다.
+   * email_verification 테이블에 있는 컬럼 중 email과 verificationCode가 일치하는 컬럼을 찾습니다. (여러개의 로우 중 expiredAt이 가장 늦은 코드로 선택)
    */
-  async findEmailVerification(email: string, verificationCode: string): Promise<EmailVerification | null> {
-    return await EmailVerification.findOne({
-      where: { email, verification_code: verificationCode },
+  async findEmailVerification(email: string): Promise<EmailVerification | null> {
+    const emailVerifications = await EmailVerification.find({
+      where: { email },
+      order: { expiredAt: 'DESC' },
     });
+
+    // 만약 결과가 없다면 null을 반환합니다.
+    if (emailVerifications.length === 0) return null;
+
+    // 그렇지 않다면 첫 번째 결과를 반환합니다. 이것이 expiredAt이 제일 나중인 로우입니다.
+    return emailVerifications[0];
   }
+
   /**
    * email_verification 테이블에 있는 컬럼의 is_verified 값을 true로 변경합니다.
    */
   async updateIsVerified(emailVerification: EmailVerification): Promise<EmailVerification> {
-    emailVerification.is_verified = true;
+    emailVerification.isVerified = true;
     return await emailVerification.save();
   }
 
@@ -48,6 +56,6 @@ export class EmailVerificationRepository {
   async checkVerifiedEmail(email: string, queryRunner: QueryRunner): Promise<EmailVerification | null> {
     return await queryRunner.manager
       .getRepository(EmailVerification)
-      .findOne({ where: { email: email, is_verified: true } });
+      .findOne({ where: { email: email, isVerified: true } });
   }
 }

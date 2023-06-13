@@ -36,17 +36,17 @@ export class EmailVerificationService {
     }
 
     // 이메일 인증 번호 생성
-    const verification_code = this.generateVerificationCode();
+    const verificationCode = this.generateVerificationCode();
 
     try {
       const savedEmailVerificationData = await this.emailVerificationRepository.createEmailVerification(
         email,
-        verification_code,
+        verificationCode,
         queryRunner,
       );
-      await this.sendEmail(email, verification_code, this.SENDGRID_API_KEY);
+      await this.sendEmail(email, verificationCode, this.SENDGRID_API_KEY);
 
-      return { expiredAt: savedEmailVerificationData.expired_at };
+      return { expiredAt: savedEmailVerificationData.expiredAt };
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '인증번호 발송에 실패하였습니다.', {
         status: 500,
@@ -55,15 +55,15 @@ export class EmailVerificationService {
   }
 
   async confirmVerificationCode(email: string, verificationCode: string) {
-    const emaiVerificationInfo = await this.emailVerificationRepository.findEmailVerification(email, verificationCode);
+    const emaiVerificationInfo = await this.emailVerificationRepository.findEmailVerification(email);
 
-    if (!emaiVerificationInfo) {
+    if (!emaiVerificationInfo || emaiVerificationInfo?.verificationCode !== verificationCode) {
       throw new CustomHttpException(ResponseCode.VERIFICATION_INFO_NOT_EXIST, '유효하지 않은 인증번호입니다.', {
         status: 404,
       });
     }
 
-    const isExpired = emaiVerificationInfo.expired_at < new Date();
+    const isExpired = emaiVerificationInfo.expiredAt < new Date();
     if (isExpired) {
       throw new CustomHttpException(ResponseCode.EXPIRED_VERIFICATION_CODE, '인증번호가 만료되었습니다.');
     }
@@ -86,7 +86,7 @@ export class EmailVerificationService {
   }
 
   // 이메일 전송 메서드
-  private async sendEmail(email: string, verification_code: string, apiKey: string): Promise<void> {
+  private async sendEmail(email: string, verificationCode: string, apiKey: string): Promise<void> {
     sgMail.setApiKey(apiKey);
     const mailObj = {
       from: 'linkloud_official@linkloud.co.kr', // 발신자 이메일(sendgrid에 등록한 주소만 사용 가능)
@@ -96,7 +96,7 @@ export class EmailVerificationService {
     };
     const filePath = path.join(process.cwd(), 'src/modules/email-verification/html/email-verification.html');
     let html = fs.readFileSync(filePath, 'utf8');
-    html = html.replace('${verification_code}', verification_code); // 인증 코드 삽입
+    html = html.replace('${verificationCode}', verificationCode); // 인증 코드 삽입
     mailObj.html = html;
 
     await sgMail.send(mailObj);
