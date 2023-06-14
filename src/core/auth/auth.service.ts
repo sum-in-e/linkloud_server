@@ -52,7 +52,7 @@ export class AuthService {
     }
 
     const parsedCookies = parseCookies(cookies);
-    const accessToken = parsedCookies['act'] as string;
+    const accessToken = parsedCookies['sq'] as string;
 
     try {
       const decoded = await this.jwtService.verifyAsync(accessToken, {
@@ -69,7 +69,7 @@ export class AuthService {
         if (e.name === 'TokenExpiredError' || e.name === 'JsonWebTokenError') {
           // 액세스 토큰 검사했는데 만료 등 문제가 있다 -> 리프레시 토큰 확인
           try {
-            const refreshToken = parsedCookies['rft'] as string;
+            const refreshToken = parsedCookies['bp'] as string;
             const decoded = await this.jwtService.verifyAsync(refreshToken, {
               secret: this.JWT_SECRET_KEY,
             }); // 검증 실패 시 catch 블록으로 이동함
@@ -115,8 +115,8 @@ export class AuthService {
       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '7d', secret: this.JWT_SECRET_KEY });
       const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d', secret: this.JWT_SECRET_KEY });
 
-      response.cookie('act', accessToken, cookieOptions);
-      response.cookie('rft', refreshToken, cookieOptions);
+      response.cookie('sq', accessToken, cookieOptions);
+      response.cookie('bp', refreshToken, cookieOptions);
     } catch (error) {
       throw new CustomHttpException(
         ResponseCode.INTERNAL_SERVER_ERROR,
@@ -130,7 +130,7 @@ export class AuthService {
    * @description 액세스토큰과 리프레시 토큰을 만료시키는 메서드
    */
   async expireTokens(response: Response): Promise<void> {
-    response.cookie('act', '', { maxAge: 0 });
-    response.cookie('rft', '', { maxAge: 0 });
+    response.cookie('sq', '', { maxAge: 0 });
+    response.cookie('bp', '', { maxAge: 0 });
   }
 }

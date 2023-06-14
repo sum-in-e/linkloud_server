@@ -25,20 +25,6 @@ export class SignUpDto {
   @MinLength(2, { message: '유저명은 최소 2자 이상이어야 합니다.' })
   @MaxLength(15, { message: '유저명은 최대 15자 이하여야 합니다.' })
   name!: string;
-
-  @ApiProperty({
-    description: '개인정보제공동의 여부',
-  })
-  @IsBoolean()
-  @Equals(true)
-  isAgreeProvidePersonalInfo!: boolean;
-
-  @ApiProperty({
-    description: '이용약관동의 여부',
-  })
-  @IsBoolean()
-  @Equals(true)
-  isAgreeTermsOfUse!: boolean;
 }
 
 export class KakaoSignUpDto {
@@ -56,20 +42,6 @@ export class KakaoSignUpDto {
   @MaxLength(15, { message: '유저명은 최대 15자 이하여야 합니다.' })
   @IsString()
   name!: string;
-
-  @ApiProperty({
-    description: '개인정보제공동의 여부',
-  })
-  @IsBoolean()
-  @Equals(true)
-  isAgreeProvidePersonalInfo!: boolean;
-
-  @ApiProperty({
-    description: '이용약관동의 여부',
-  })
-  @IsBoolean()
-  @Equals(true)
-  isAgreeTermsOfUse!: boolean;
 }
 
 export class LoginDto {

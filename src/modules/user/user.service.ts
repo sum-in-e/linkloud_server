@@ -39,7 +39,11 @@ export class UserService {
     if (user) {
       await this.checkUserStatusByEmail(user);
 
-      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.', {
+      let message = '이미 가입된 이메일입니다.';
+      if (user.method === 'email') message = `이메일 회원가입으로 등록된 계정입니다.`;
+      if (user.method === 'kakao') message = `카카오 회원가입으로 등록된 계정입니다.`;
+
+      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, message, {
         data: { email: user.email, method: user.method },
       });
     }
@@ -113,10 +117,6 @@ export class UserService {
       throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.', {
         data: { email: user.email, method: user.method },
       });
-    }
-
-    if (!body.isAgreeProvidePersonalInfo || !body.isAgreeTermsOfUse) {
-      throw new CustomHttpException(ResponseCode.TERMS_NOT_AGREED, '필수 약관 동의가 필요합니다.');
     }
 
     if (body.name.length < 2 || body.name.length > 15) {

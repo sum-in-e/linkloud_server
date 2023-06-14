@@ -59,7 +59,7 @@ export class HttpExceptionFilter {
       // * HttpException 타입이 아닐 경우 -> 500에러
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = ResponseCode.INTERNAL_SERVER_ERROR;
-      message = 'Internal Server Error';
+      message = '서버 에러로 인해 요청을 수행하지 못했습니다.';
 
       // 👾 로깅
       if (isProduction) {
