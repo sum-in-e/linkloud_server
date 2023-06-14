@@ -32,7 +32,11 @@ export class EmailVerificationService {
     }
 
     if (user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.');
+      let message = '이미 가입된 이메일입니다.';
+      if (user.method === 'email') message = `이메일 회원가입으로 등록된 계정입니다.`;
+      if (user.method === 'kakao') message = `카카오 회원가입으로 등록된 계정입니다.`;
+
+      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, message);
     }
 
     // 이메일 인증 번호 생성
@@ -72,7 +76,7 @@ export class EmailVerificationService {
       const emailVerificationInfo = await this.emailVerificationRepository.updateIsVerified(emaiVerificationInfo);
       return { email: emailVerificationInfo.email };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '인증번호 확인에 실패하였습니다.', {
         status: 500,
       });
     }
