@@ -137,7 +137,7 @@ export class UserController {
       });
     }
 
-    response.redirect(`https://kauth.kakao.com/oauth/authorize?${query}`);
+    return response.redirect(`https://kauth.kakao.com/oauth/authorize?${query}`);
   }
 
   @ApiOperation({
@@ -149,12 +149,21 @@ export class UserController {
   @DisableSuccessInterceptor()
   @IsPublic()
   async kakaoOauthSignupCallback(@Query() query: KakaoCodeDto, @Res({ passthrough: true }) response: Response) {
-    const { email, sub } = await this.kakaoOauthService.getUserInfo(query.code, this.KAKAO_SIGNUP_REDIRECT_URI);
+    const kakaoUserInfo = await this.kakaoOauthService.getUserInfo(query.code, this.KAKAO_SIGNUP_REDIRECT_URI);
 
-    await this.userService.createKakaoVerificationInfo(email, sub); // 회원 가입 완료를 위해서는 클라이언트로부터 닉네임 입력과 약관 동의를 받아야하므로 회원가입 완료 API를 분리함
+    if (kakaoUserInfo === null) {
+      // 카카오 유저 정보를 에러로 못 가져온 경우 이전 회원가입 페이지로 이동
+      return response.redirect(`${this.CLIENT_URL}/signup?error=카카오계정 연동에 실패하였습니다.`);
+    }
+
+    const user = await this.userService.createKakaoVerificationInfo(kakaoUserInfo.email, kakaoUserInfo.sub); // 회원 가입 완료를 위해서는 클라이언트로부터 닉네임 입력과 약관 동의를 받아야하므로 회원가입 완료 API를 분리함
+
+    if ('error' in user) {
+      return response.redirect(`${this.CLIENT_URL}/signup?error=${user.error}`);
+    }
 
     // 닉네임, 약관 동의받는 페이지로 유저 리다이렉트
-    response.redirect(`${this.CLIENT_URL}/signup/oauth?sign=${sub}`);
+    return response.redirect(`${this.CLIENT_URL}/signup/oauth?sign=${kakaoUserInfo.sub}`);
   }
 
   @ApiOperation({
@@ -164,7 +173,7 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: `${ResponseCode.EMAIL_ALREADY_EXIST}, ${ResponseCode.TERMS_NOT_AGREED}, ${ResponseCode.INVALID_USER_NAME_FORMAT}, ${ResponseCode.DELETED_USER}`,
+    description: `${ResponseCode.EMAIL_ALREADY_EXIST}, ${ResponseCode.INVALID_USER_NAME_FORMAT}, ${ResponseCode.DELETED_USER}`,
   })
   @ApiResponse({ status: 404, description: ResponseCode.KAKAO_VERIFICATION_INFO_NOT_EXIST })
   @Post('signup/kakao')
@@ -202,15 +211,23 @@ export class UserController {
   @DisableSuccessInterceptor()
   @IsPublic()
   async kakaoOauthLoginCallback(@Query() query: KakaoCodeDto, @Res({ passthrough: true }) response: Response) {
-    const { email } = await this.kakaoOauthService.getUserInfo(query.code, this.KAKAO_LOGIN_REDIRECT_URI);
+    const kakaoUserInfo = await this.kakaoOauthService.getUserInfo(query.code, this.KAKAO_LOGIN_REDIRECT_URI);
 
-    const user = await this.userService.verifyKakaoUser(email);
+    if (kakaoUserInfo === null) {
+      // 카카오 유저 정보를 에러로 못 가져온 경우 이전 로그인 페이지로 이동
+      return response.redirect(`${this.CLIENT_URL}/login?error=카카오계정 연동에 실패하였습니다.`);
+    }
 
-    await this.userService.updateLastLoginAt(user);
+    const user = await this.userService.verifyKakaoUser(kakaoUserInfo.email);
+
+    if ('error' in user) {
+      return response.redirect(`${this.CLIENT_URL}/login?error=${user.error}`);
+    }
+
     await this.authService.generateTokens(user.id, user.email, response);
     await this.setClientInCookie(response);
 
-    response.redirect(`${this.CLIENT_URL}/mykloud`);
+    return response.redirect(`${this.CLIENT_URL}/mykloud`);
   }
 
   @ApiOperation({ summary: '로그아웃' })

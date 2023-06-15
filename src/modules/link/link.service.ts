@@ -17,9 +17,13 @@ export class LinkService {
     try {
       return await this.linkRepository.createGuideLinks(user, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
-        status: 500,
-      });
+      throw new CustomHttpException(
+        ResponseCode.INTERNAL_SERVER_ERROR,
+        '회원가입에 실패하였습니다. 다시 시도해 주세요.',
+        {
+          status: 500,
+        },
+      );
     }
   }
 

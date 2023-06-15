@@ -39,8 +39,7 @@ export class UserService {
     if (user) {
       await this.checkUserStatusByEmail(user);
 
-      let message = '이미 가입된 이메일입니다.';
-      if (user.method === 'email') message = `이메일 회원가입으로 등록된 계정입니다.`;
+      let message = '이미 등록된 계정입니다.';
       if (user.method === 'kakao') message = `카카오 회원가입으로 등록된 계정입니다.`;
 
       throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, message, {
@@ -68,19 +67,26 @@ export class UserService {
   /**
    * @description 카카오 서버로부터 가져온 유저 정보를 createKakaoVerificationInfo 테이블에 저장하는 메서드
    */
-  async createKakaoVerificationInfo(email: string, sub: string): Promise<{ email: string; sub: string }> {
+  async createKakaoVerificationInfo(
+    email: string,
+    sub: string,
+  ): Promise<{ email: string; sub: string } | { error: string }> {
     const user = await this.userRepository.findUserByEmail(email);
 
     // 계정 검증
     if (user) {
-      await this.checkUserStatusByEmail(user);
+      // 탈퇴한 계정 예외처리
+      if (user?.deletedAt) {
+        return { error: '회원 탈퇴 처리된 이메일입니다.' };
+      }
 
-      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.', {
-        data: { email: user.email, method: user.method },
-      });
+      // TODO: 휴면 계정 예외 처리
+
+      const text = user.method === 'email' ? `이메일 회원가입으로 등록된 계정입니다.` : `이미 등록된 계정입니다.`;
+      // 이미 가입된 이메일 예외 처리
+      return { error: text };
     }
 
-    // KakaoVerificationInfo 테이블에 저장(카카오 회원가입 완료 시 유저 인증을 위해 사용)
     try {
       const result = await this.kakaoVericationInfoRepository.createKakaoVerificationInfo(email, sub);
       return {
@@ -88,7 +94,7 @@ export class UserService {
         sub: result.sub,
       };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원가입에 실패하였습니다.', { status: 500 });
+      return { error: '회원가입에 실패하였습니다.' };
     }
   }
 
@@ -102,7 +108,7 @@ export class UserService {
     if (!kakaoVerificationInfo) {
       throw new CustomHttpException(
         ResponseCode.KAKAO_VERIFICATION_INFO_NOT_EXIST,
-        '카카오 인증 정보를 찾을 수 없습니다.',
+        '카카오 인증 정보를 찾을 수 없습니다. 회원가입을 다시 진행해 주세요.',
         {
           status: 404,
         },
@@ -114,7 +120,7 @@ export class UserService {
     if (user) {
       await this.checkUserStatusByEmail(user);
 
-      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 이메일입니다.', {
+      throw new CustomHttpException(ResponseCode.EMAIL_ALREADY_EXIST, '이미 가입된 계정입니다.', {
         data: { email: user.email, method: user.method },
       });
     }
@@ -133,20 +139,24 @@ export class UserService {
   /**
    * @description 카카오 로그인 계정 검증 및 유저 반환
    */
-  async verifyKakaoUser(email: string): Promise<User> {
+  async verifyKakaoUser(email: string): Promise<User | { error: string }> {
     const user = await this.userRepository.findUserByEmail(email);
 
     // 가입된 계정 존재하는지 확인
     if (!user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '존재하지 않는 이메일입니다.', { status: 404 });
+      return { error: '가입되지 않은 이메일입니다.' };
     }
 
     if (user.method === 'email') {
-      throw new CustomHttpException(ResponseCode.SIGNED_BY_EMAIL, '이메일 회원가입으로 등록된 계정입니다.');
+      return { error: '이메일 회원가입으로 등록된 계정입니다.' };
     }
 
-    // 계정 상태 확인
-    await this.checkUserStatusByEmail(user);
+    // 탈퇴한 계정 예외처리
+    if (user?.deletedAt) {
+      return { error: '회원 탈퇴 처리된 이메일입니다.' };
+    }
+
+    // TODO: 휴면 계정 예외 처리
 
     return user;
   }
@@ -159,7 +169,7 @@ export class UserService {
 
     // 가입된 계정 존재하는지 확인
     if (!user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '존재하지 않는 이메일입니다.', { status: 404 });
+      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '가입되지 않은 이메일입니다.', { status: 404 });
     }
 
     // 카카오로 가입한 계정인 경우 예외 처리
@@ -190,7 +200,7 @@ export class UserService {
   private async checkUserStatusByEmail(user: User): Promise<User> {
     // 탈퇴한 계정 예외처리
     if (user?.deletedAt) {
-      throw new CustomHttpException(ResponseCode.DELETED_USER, '회원 탈퇴 처리된 이메일입니다.', {
+      throw new CustomHttpException(ResponseCode.DELETED_USER, '회원 탈퇴 처리된 계정입니다.', {
         data: { email: user.email, method: user.method },
       });
     }
