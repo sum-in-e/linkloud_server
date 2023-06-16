@@ -152,7 +152,7 @@ export class UserController {
     const kakaoUserInfo = await this.kakaoOauthService.getUserInfo(query.code, this.KAKAO_SIGNUP_REDIRECT_URI);
 
     if (kakaoUserInfo === null) {
-      console.log('kakaoUserInfo is null');
+      console.log('kakaoUserInfo is null', `${this.CLIENT_URL}/signup?error=카카오계정 연동에 실패하였습니다.`);
 
       // 카카오 유저 정보를 에러로 못 가져온 경우 이전 회원가입 페이지로 이동
       return response.redirect(`${this.CLIENT_URL}/signup?error=카카오계정 연동에 실패하였습니다.`);
@@ -165,7 +165,7 @@ export class UserController {
       console.log('error in user');
       return response.redirect(`${this.CLIENT_URL}/signup?error=${user.error}`);
     }
-
+    console.log('끝인데 여이가', `${this.CLIENT_URL}/signup/oauth?sign=${kakaoUserInfo.sub}`);
     // 닉네임, 약관 동의받는 페이지로 유저 리다이렉트
     return response.redirect(`${this.CLIENT_URL}/signup/oauth?sign=${kakaoUserInfo.sub}`);
   }

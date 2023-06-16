@@ -51,7 +51,6 @@ export class KakaoOauthService {
       if (this.MODE === 'production') {
         this.sentry.captureException(error);
       }
-      console.error('Error in getUserInfo:', error);
       return null;
     }
   }
