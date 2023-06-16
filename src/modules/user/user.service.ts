@@ -75,6 +75,7 @@ export class UserService {
 
     // 계정 검증
     if (user) {
+      console.log('계정 검증');
       // 탈퇴한 계정 예외처리
       if (user?.deletedAt) {
         return { error: '회원 탈퇴 처리된 이메일입니다.' };
@@ -88,6 +89,7 @@ export class UserService {
     }
 
     try {
+      console.log('진입');
       const result = await this.kakaoVericationInfoRepository.createKakaoVerificationInfo(email, sub);
       return {
         email: result.email,
