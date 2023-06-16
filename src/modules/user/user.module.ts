@@ -15,6 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LinkModule } from 'src/modules/link/link.module';
 import { CloudModule } from 'src/modules/cloud/cloud.module';
 import { AuthService } from 'src/core/auth/auth.service';
+import { SentryProvider } from 'src/common/sentry/sentry.provider';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AuthService } from 'src/core/auth/auth.service';
     UserRepository,
     KakaoVericationInfoRepository,
     JwtUtil,
+    SentryProvider,
   ],
   exports: [UserRepository],
 })

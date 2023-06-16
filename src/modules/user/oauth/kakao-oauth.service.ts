@@ -3,17 +3,21 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { JwtUtil } from 'src/modules/user/utils/jwt.util';
+import { SentryProvider } from 'src/common/sentry/sentry.provider';
 
 @Injectable()
 export class KakaoOauthService {
   private readonly KAKAO_REST_API_KEY: string;
+  private readonly MODE: string;
 
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly jwtUtil: JwtUtil,
+    private readonly sentry: SentryProvider,
   ) {
     this.KAKAO_REST_API_KEY = this.configService.getOrThrow('KAKAO_REST_API_KEY');
+    this.MODE = this.configService.getOrThrow('MODE');
   }
 
   /**
@@ -44,6 +48,10 @@ export class KakaoOauthService {
 
       return { email, sub };
     } catch (error) {
+      if (this.MODE === 'production') {
+        this.sentry.captureException(error);
+      }
+      console.error('Error in getUserInfo:', error);
       return null;
     }
   }
