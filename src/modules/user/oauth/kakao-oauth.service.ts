@@ -40,7 +40,7 @@ export class KakaoOauthService {
           },
         }),
       );
-      console.log('kakaoResonse', kakaoResonse);
+
       const { id_token } = kakaoResonse.data;
 
       const { payloadJson } = await this.jwtUtil.decodeJWT(id_token);

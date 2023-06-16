@@ -37,39 +37,39 @@ jobs:
                 - name: TZ
                   var: TZ
                 - name: DB_HOST
-                  secret: PROD_DB_HOST
+                  secret: DB_HOST
                 - name: DB_PORT
-                  secret: PROD_DB_PORT
+                  secret: DB_PORT
                 - name: DB_USERNAME
-                  secret: PROD_DB_USERNAME
+                  secret: DB_USERNAME
                 - name: DB_PASSWORD
-                  secret: PROD_DB_PASSWORD
+                  secret: DB_PASSWORD
                 - name: DB_NAME
-                  secret: PROD_DB_NAME
+                  secret: DB_NAME
                 - name: SENDGRID_API_KEY
-                  secret: PROD_SENDGRID_API_KEY
+                  secret: SENDGRID_API_KEY
                 - name: SWAGGER_USER
-                  secret: PROD_SWAGGER_USER
+                  secret: SWAGGER_USER
                 - name: SWAGGER_PASSWORD
-                  secret: PROD_SWAGGER_PASSWORD
+                  secret: SWAGGER_PASSWORD
                 - name: KAKAO_REST_API_KEY
-                  secret: PROD_KAKAO_REST_API_KEY
+                  secret: KAKAO_REST_API_KEY
                 - name: KAKAO_SIGNUP_REDIRECT_URI
-                  secret: PROD_KAKAO_SIGNUP_REDIRECT_URI
+                  secret: KAKAO_SIGNUP_REDIRECT_URI
                 - name: KAKAO_LOGIN_REDIRECT_URI
-                  secret: PROD_KAKAO_LOGIN_REDIRECT_URI
+                  secret: KAKAO_LOGIN_REDIRECT_URI
                 - name: JWT_SECRET_KEY
-                  secret: PROD_JWT_SECRET_KEY
+                  secret: JWT_SECRET_KEY
                 - name: LOGZIO_TOKEN
-                  secret: PROD_LOGZIO_TOKEN
+                  secret: LOGZIO_TOKEN
                 - name: SENTRY_DSN
-                  secret: PROD_SENTRY_DSN
+                  secret: SENTRY_DSN
                 - name: SLACK_WEBHOOK_URL_FOR_SENTRY
-                  secret: PROD_SLACK_WEBHOOK_URL_FOR_SENTRY
+                  secret: SLACK_WEBHOOK_URL_FOR_SENTRY
                 - name: CLIENT_URL
-                  secret: PROD_CLIENT_URL
+                  secret: CLIENT_URL
                 - name: HOST
-                  secret: PROD_HOST
+                  secret: HOST
             context:
               git:
                 ref: ${{ github.ref }}
