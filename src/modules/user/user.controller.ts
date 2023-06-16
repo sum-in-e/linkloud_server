@@ -160,7 +160,7 @@ export class UserController {
     if ('error' in user) {
       return response.redirect(`${this.CLIENT_URL}/signup?error=${user.error}`);
     }
-    console.log('끝인데 여이가', `${this.CLIENT_URL}/signup/oauth?sign=${kakaoUserInfo.sub}`);
+
     // 닉네임, 약관 동의받는 페이지로 유저 리다이렉트
     return response.redirect(`${this.CLIENT_URL}/signup/oauth?sign=${kakaoUserInfo.sub}`);
   }

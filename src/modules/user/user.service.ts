@@ -144,7 +144,7 @@ export class UserService {
 
     // 가입된 계정 존재하는지 확인
     if (!user) {
-      return { error: '가입되지 않은 이메일입니다.' };
+      return { error: '등록되지 않은 계정입니다.' };
     }
 
     if (user.method === 'email') {
@@ -153,7 +153,7 @@ export class UserService {
 
     // 탈퇴한 계정 예외처리
     if (user?.deletedAt) {
-      return { error: '회원 탈퇴 처리된 이메일입니다.' };
+      return { error: '회원 탈퇴 처리된 계정입니다.' };
     }
 
     // TODO: 휴면 계정 예외 처리
@@ -169,7 +169,7 @@ export class UserService {
 
     // 가입된 계정 존재하는지 확인
     if (!user) {
-      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '가입되지 않은 이메일입니다.', { status: 404 });
+      throw new CustomHttpException(ResponseCode.EMAIL_NOT_EXIST, '가입되지 않은 계정입니다.', { status: 404 });
     }
 
     // 카카오로 가입한 계정인 경우 예외 처리
