@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { CookieOptions, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
 import { parse } from 'querystring';
 import { User } from 'src/modules/user/entities/user.entity';
+import { cookieOptions } from 'src/modules/user/utils/cookie';
 
 function parseCookies(cookies: string) {
   return parse(cookies, '; ');
@@ -32,7 +33,6 @@ export class AuthService {
    */
   async findUserByIdForAuthGuard(id: number, response: Response): Promise<User> {
     const user = await this.userRepository.findUserByIdForAuthGuard(id);
-
     if (!user) {
       await this.expireTokens(response); // 토큰 해석해서 유저 id 가져왔는데 못 찾았으면 토큰 만료시키기 (혹시 몰라서)
       throw new CustomHttpException(ResponseCode.USER_NOT_EXIST, '잘못된 접근입니다. 로그인이 필요합니다.');
@@ -47,6 +47,7 @@ export class AuthService {
     const cookies = request.headers.cookie;
 
     if (!cookies) {
+      console.log('Auth Guard 쿠키 없음', new Date().toLocaleString());
       throw new CustomHttpException(ResponseCode.AUTHENTICATION_REQUIRED, ResponseCode.AUTHENTICATION_REQUIRED, {
         status: 401,
       });
@@ -102,21 +103,13 @@ export class AuthService {
    * @description JWT로 액세스토큰과 리프레시 토큰 생성하고 응답 헤더에 저장하는 메서드
    */
   async generateTokens(userId: number, email: string, response: Response): Promise<void> {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: this.MODE === 'production' ? true : false, // https를 통해서만 전송되도록 한다.
-      sameSite: 'lax',
-      path: '/',
-      domain: this.HOST,
-    } as CookieOptions;
-
     const payload = { userId, email };
 
     try {
       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '7d', secret: this.JWT_SECRET_KEY });
       const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d', secret: this.JWT_SECRET_KEY });
-      response.cookie('sq', accessToken, cookieOptions);
-      response.cookie('bp', refreshToken, cookieOptions);
+      response.cookie('sq', accessToken, cookieOptions(this.MODE, this.HOST));
+      response.cookie('bp', refreshToken, cookieOptions(this.MODE, this.HOST));
     } catch (error) {
       throw new CustomHttpException(
         ResponseCode.INTERNAL_SERVER_ERROR,
@@ -130,7 +123,7 @@ export class AuthService {
    * @description 액세스토큰과 리프레시 토큰을 만료시키는 메서드
    */
   async expireTokens(response: Response): Promise<void> {
-    response.cookie('sq', '', { maxAge: 0 });
-    response.cookie('bp', '', { maxAge: 0 });
+    response.cookie('sq', '', { ...cookieOptions(this.MODE, this.HOST), maxAge: 0 });
+    response.cookie('bp', '', { ...cookieOptions(this.MODE, this.HOST), maxAge: 0 });
   }
 }
