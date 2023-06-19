@@ -45,6 +45,7 @@ export class AuthService {
     // 💡 토큰이 httponlycookie에 저장된 경우 브라우저에 의해 자동으로 Cookie 헤더에 첨부되어 보내진다. -> request.headers.cookie에서 찾을 수 있다.
     // 💡 이 경우 Authorization 헤더가 아닌 cookie 헤더를 확인하여 토큰을 추출하므로 클라이언트에서는 요청 시 Autorization 헤더를 보낼 필요가 없다.
     const cookies = request.headers.cookie;
+
     if (!cookies) {
       throw new CustomHttpException(ResponseCode.AUTHENTICATION_REQUIRED, ResponseCode.AUTHENTICATION_REQUIRED, {
         status: 401,
@@ -70,19 +71,19 @@ export class AuthService {
           // 액세스 토큰 검사했는데 만료 등 문제가 있다 -> 리프레시 토큰 확인
           try {
             const refreshToken = parsedCookies['bp'] as string;
+
             const decoded = await this.jwtService.verifyAsync(refreshToken, {
               secret: this.JWT_SECRET_KEY,
             }); // 검증 실패 시 catch 블록으로 이동함
 
             // 리프레시 토큰은 있고 문제도 없다. -> 토큰 둘다 갱신 하고 API 요청 수행
             await this.generateTokens(decoded.userId, decoded.email, response);
+
             return {
               userId: decoded.userId,
               email: decoded.email,
             };
           } catch (error) {
-            response.cookie('client_in', '', { maxAge: 0 });
-
             // 리프레시 토큰 없거나 문제가 있다 -> 에러 던지고 끝 (로그인 필요)
             throw new CustomHttpException(ResponseCode.AUTHENTICATION_EXPIRED, ResponseCode.AUTHENTICATION_EXPIRED, {
               status: 401,
@@ -114,7 +115,6 @@ export class AuthService {
     try {
       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '7d', secret: this.JWT_SECRET_KEY });
       const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d', secret: this.JWT_SECRET_KEY });
-
       response.cookie('sq', accessToken, cookieOptions);
       response.cookie('bp', refreshToken, cookieOptions);
     } catch (error) {
