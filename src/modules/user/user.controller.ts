@@ -23,6 +23,7 @@ import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import * as querystring from 'querystring';
 import { parse } from 'querystring';
+import { cookieOptions } from 'src/modules/user/utils/cookie';
 
 @ApiTags('유저 APIs')
 @Controller('user')
@@ -129,15 +130,8 @@ export class UserController {
 
     if (return_to && type === 'login') {
       // * return_to가 있으면 쿠키에 설정 -> 카카오 로그인(회원가입x) 302 리디렉션 시 이전에 있던 페이지로 보내기 위함
-      const cookieOptions = {
-        httpOnly: true,
-        secure: this.MODE === 'production' ? true : false,
-        sameSite: 'lax',
-        path: '/',
-        domain: this.HOST,
-      } as CookieOptions;
 
-      response.cookie('return_to', return_to, cookieOptions); // 설정한 쿠키는 카카오 로그인 API에서 확인 후 해당 url로 리디렉션함과 동시에 쿠키에서 제거합니다.
+      response.cookie('return_to', return_to, cookieOptions(this.MODE, this.HOST)); // 설정한 쿠키는 카카오 로그인 API에서 확인 후 해당 url로 리디렉션함과 동시에 쿠키에서 제거합니다.
     }
 
     const queryString = querystring.stringify({
@@ -253,7 +247,7 @@ export class UserController {
     }
 
     await this.authService.generateTokens(user.id, user.email, response);
-    response.cookie('return_to', '', { maxAge: 0 });
+    response.cookie('return_to', '', { ...cookieOptions(this.MODE, this.HOST), maxAge: 0 });
     return response.redirect(`${this.CLIENT_URL}${path}`);
   }
 
