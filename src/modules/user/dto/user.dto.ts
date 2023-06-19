@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsString, Matches, MaxLength, MinLength, Equals } from 'class-validator';
+import { IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignUpDto {
@@ -64,4 +64,18 @@ export class KakaoCodeDto {
   })
   @IsString()
   code!: string;
+}
+
+export class AuthKakaoQueryTypeDto {
+  @ApiProperty({
+    description: `카카오 유저 정보 요청한 수단 ('login' | 'signup')`,
+  })
+  @IsString()
+  type!: 'login' | 'signup';
+
+  @ApiProperty({
+    description: '로그인 시 돌아갈 return path',
+  })
+  @IsString()
+  return_to!: string;
 }
