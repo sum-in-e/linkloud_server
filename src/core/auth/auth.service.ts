@@ -47,7 +47,6 @@ export class AuthService {
     const cookies = request.headers.cookie;
 
     if (!cookies) {
-      console.log('Auth Guard 쿠키 없음', new Date().toLocaleString());
       throw new CustomHttpException(ResponseCode.AUTHENTICATION_REQUIRED, ResponseCode.AUTHENTICATION_REQUIRED, {
         status: 401,
       });
