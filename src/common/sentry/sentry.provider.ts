@@ -26,13 +26,13 @@ export class SentryProvider {
 
     if (this.webhook) {
       const message = {
-        text: '🚨링클라우드 서버 버그 발생🚨',
+        text: '🚨링클라우드 서버 에러🚨',
         blocks: [
           {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `*🚨링클라우드 서버 버그 발생🚨*\n*${exception.name}*: ${exception.message}`,
+              text: `*🚨링클라우드 서버 에러🚨*\n*${exception.name}*: ${exception.message}`,
             },
           },
           {
