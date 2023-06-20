@@ -221,7 +221,7 @@ export class UserController {
     @Req() request: Request,
   ) {
     const cookies = request.headers.cookie;
-    let path = '/my/all';
+    let path = '/kloud';
 
     if (cookies) {
       const parsedCookies = parse(cookies, '; ');
