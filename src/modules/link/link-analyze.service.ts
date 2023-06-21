@@ -17,7 +17,9 @@ export class LinkAnalyzeService {
     const result = {
       url,
       title: meta['og:title'] || url,
-      thumbnailUrl: meta['og:image'] || null, // TODO: 기본이미지 url 넣기
+      thumbnailUrl:
+        meta['og:image'] ||
+        'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1687269892/linkloud/emtygeehcgigfn9wlhw3.jpg',
       description: meta['og:description'] || url,
     };
 

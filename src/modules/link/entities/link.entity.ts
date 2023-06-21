@@ -21,9 +21,8 @@ export class Link {
   @Column({ type: 'varchar', length: 255 })
   url!: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  thumbnailUrl!: string | null; // og:image 있으면 할당하고 없으면 null -> 클라이언트에서 이미지 저장하고 null이면 할당
-  // TODO: link analyze에서 기본이미지 url 반환 할거니까 url null 지우기
+  @Column({ type: 'varchar', length: 255 })
+  thumbnailUrl!: string;
 
   @Column({ type: 'text' })
   title!: string;
