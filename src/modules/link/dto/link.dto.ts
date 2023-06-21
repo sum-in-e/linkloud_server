@@ -21,7 +21,7 @@ export class CreateLinkDto {
   @ApiProperty({ description: '링크의 썸네일 URL' })
   @IsUrl()
   @IsOptional()
-  thumbnailUrl!: string | null;
+  thumbnailUrl!: string;
 
   @ApiProperty({ description: '링크의 제목' })
   @IsString()
