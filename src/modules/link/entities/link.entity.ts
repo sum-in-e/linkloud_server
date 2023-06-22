@@ -1,4 +1,4 @@
-import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
+import { Kloud } from 'src/modules/kloud/entities/kloud.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Entity,
@@ -54,11 +54,11 @@ export class Link {
   @DeleteDateColumn({ type: 'datetime', nullable: true })
   deletedAt!: Date | null;
 
-  @ManyToOne(() => Cloud, (cloud) => cloud.links, {
+  @ManyToOne(() => Kloud, (kloud) => kloud.links, {
     onDelete: 'CASCADE', // 클라우드가 삭제될 때, 해당 클라우드를 참조하고 있는 링크도 함께 삭제된다.
     onUpdate: 'CASCADE',
   })
-  cloud!: Cloud | null;
+  kloud!: Kloud | null;
 
   @ManyToOne(() => User, (user) => user.links, {
     onDelete: 'CASCADE', // 유저가 삭제될 때, 해당 유저를 참조하고 있는 링크도 함께 삭제된다.

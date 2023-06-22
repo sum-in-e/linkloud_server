@@ -156,14 +156,14 @@ export class UserController {
 
     if (kakaoUserInfo === null) {
       // 카카오 유저 정보를 에러로 못 가져온 경우 이전 회원가입 페이지로 이동
-      const queryString = querystring.stringify({ error: '카카오계정 연동에 실패하였습니다.' });
+      const queryString = querystring.stringify({ error: encodeURIComponent('카카오계정 연동에 실패하였습니다.') });
 
       return response.redirect(`${this.CLIENT_URL}/signup?${queryString}`);
     }
     const user = await this.userService.createKakaoVerificationInfo(kakaoUserInfo.email, kakaoUserInfo.sub); // 회원 가입 완료를 위해서는 클라이언트로부터 닉네임 입력과 약관 동의를 받아야하므로 회원가입 완료 API를 분리함
 
     if ('error' in user) {
-      const queryString = querystring.stringify({ error: user.error });
+      const queryString = querystring.stringify({ error: encodeURIComponent(user.error) });
       return response.redirect(`${this.CLIENT_URL}/signup?${queryString}`);
     }
 
@@ -235,14 +235,17 @@ export class UserController {
 
     if (kakaoUserInfo === null) {
       // 카카오 유저 정보를 에러로 못 가져온 경우 이전 로그인 페이지로 이동
-      const queryString = querystring.stringify({ error: '카카오계정 연동에 실패하였습니다.', return_to: path });
+      const queryString = querystring.stringify({
+        error: encodeURIComponent('카카오계정 연동에 실패하였습니다.'),
+        return_to: path,
+      });
       return response.redirect(`${this.CLIENT_URL}/login?${queryString}`);
     }
 
     const user = await this.userService.verifyKakaoUser(kakaoUserInfo.email);
 
     if ('error' in user) {
-      const queryString = querystring.stringify({ error: user.error, return_to: path });
+      const queryString = querystring.stringify({ error: encodeURIComponent(user.error), return_to: path });
       return response.redirect(`${this.CLIENT_URL}/login?${queryString}`);
     }
 

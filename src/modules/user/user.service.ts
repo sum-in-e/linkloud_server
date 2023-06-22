@@ -9,7 +9,7 @@ import { KakaoSignUpDto, LoginDto, SignUpDto } from 'src/modules/user/dto/user.d
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
 import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao-virification-info.ropository';
-import { CloudRepository } from 'src/modules/cloud/repository/cloud.repository';
+import { KloudRepository } from 'src/modules/kloud/repository/kloud.repository';
 import { LinkRepository } from 'src/modules/link/repositories/link.repository';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class UserService {
   constructor(
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
-    private readonly cloudRepository: CloudRepository,
+    private readonly kloudRepository: KloudRepository,
     private readonly linkRepository: LinkRepository,
     private readonly emailVerificationRepository: EmailVerificationRepository,
     private readonly kakaoVericationInfoRepository: KakaoVericationInfoRepository,
@@ -223,12 +223,12 @@ export class UserService {
 
   async deleteUser(user: User, queryRunner: QueryRunner): Promise<void> {
     try {
-      const clouds = await this.cloudRepository.findCloudByUser(user, queryRunner);
+      const klouds = await this.kloudRepository.findKloudByUser(user, queryRunner);
       const links = await this.linkRepository.findLinksByUser(user, queryRunner);
 
       // 유저와 연결된 링크와 클라우드를 제거한다
-      if (clouds.length > 0) {
-        await this.cloudRepository.deleteClouds(clouds, queryRunner);
+      if (klouds.length > 0) {
+        await this.kloudRepository.deleteKlouds(klouds, queryRunner);
       }
       if (links.length > 0) {
         await this.linkRepository.deleteLinks(links, queryRunner);

@@ -24,7 +24,7 @@ import {
   GetAnalyzeDto,
   GetLinksDto,
   UpdateLinkDto,
-  UpdateLinksCloudDto,
+  UpdateLinksKloudDto,
 } from 'src/modules/link/dto/link.dto';
 import { LinkAnalyzeService } from 'src/modules/link/link-analyze.service';
 import { LinkService } from 'src/modules/link/link.service';
@@ -46,7 +46,7 @@ export class LinkController {
 
   @ApiOperation({ summary: '링크 추가' })
   @ApiResponse({ status: 400, description: ResponseCode.INVALID_PARAMS })
-  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
+  @ApiResponse({ status: 404, description: ResponseCode.KLOUD_NOT_FOUND })
   @Post('')
   async createLink(@Body(ValidationPipe) body: CreateLinkDto, @Req() request: RequestWithUser) {
     // url, title은 필수라서 유저가 보낸 데이터를 검증해야하겠지만 클라이언트에서 title 없으면 저장 못 하게 할거고, url은 애초에 linkAnalyze api에서 내려주는거 그대로 가져오는거라 유저가 수정 못 하는 값이라 에러가 나면 뭔가 이상하게 동작하는 것임. 그래서 굳이 특정 property 지정할 필요 없이 전부 BadRequestError 주면 되서 그냥 validationPipe를 사용함
@@ -54,7 +54,7 @@ export class LinkController {
     const link = await this.linkService.createLink(body, user);
 
     return {
-      cloudId: link.cloud ? link.cloud.id : null, // null이면 분류 안 된 링크
+      kloudId: link.kloud ? link.kloud.id : null, // null이면 분류 안 된 링크
     };
   }
 
@@ -79,10 +79,10 @@ export class LinkController {
         memo: link.memo,
         isInMyCollection: link.isInMyCollection,
         isRead: link.isRead,
-        cloud: link.cloud
+        kloud: link.kloud
           ? {
-              id: link.cloud.id,
-              name: link.cloud.name,
+              id: link.kloud.id,
+              name: link.kloud.name,
             }
           : null,
       })),
@@ -106,10 +106,10 @@ export class LinkController {
       isInMyCollection: link.isInMyCollection,
       isRead: link.isRead,
       createdAt: link.createdAt,
-      cloud: link.cloud
+      kloud: link.kloud
         ? {
-            id: link.cloud.id,
-            name: link.cloud.name,
+            id: link.kloud.id,
+            name: link.kloud.name,
           }
         : null,
     };
@@ -128,16 +128,16 @@ export class LinkController {
 
   @ApiOperation({ summary: '선택한 링크의 클라우드 일괄 이동' })
   @ApiResponse({ status: 400, description: ResponseCode.INVALID_PARAMS })
-  @ApiResponse({ status: 404, description: `${ResponseCode.LINK_NOT_FOUND}, ${ResponseCode.CLOUD_NOT_FOUND}` })
-  @Patch('ids/cloud')
+  @ApiResponse({ status: 404, description: `${ResponseCode.LINK_NOT_FOUND}, ${ResponseCode.KLOUD_NOT_FOUND}` })
+  @Patch('ids/kloud')
   @UseInterceptors(TransactionInterceptor)
-  async updateLinksCloud(
-    @Body(ValidationPipe) body: UpdateLinksCloudDto,
+  async updateLinksKloud(
+    @Body(ValidationPipe) body: UpdateLinksKloudDto,
     @Req() request: RequestWithUser,
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = request.user;
-    await this.linkService.updateLinksCloud(body.linkIds, body.cloudId, user, queryRunner);
+    await this.linkService.updateLinksKloud(body.linkIds, body.kloudId, user, queryRunner);
     return {};
   }
 
@@ -158,7 +158,7 @@ export class LinkController {
 
   @ApiOperation({ summary: '링크 정보 수정' })
   @ApiResponse({ status: 400, description: ResponseCode.INVALID_PARAMS })
-  @ApiResponse({ status: 404, description: `${ResponseCode.LINK_NOT_FOUND}, ${ResponseCode.CLOUD_NOT_FOUND}` })
+  @ApiResponse({ status: 404, description: `${ResponseCode.LINK_NOT_FOUND}, ${ResponseCode.KLOUD_NOT_FOUND}` })
   @Patch(':id')
   async updateLink(
     @Param('id', ParseIntPipe) id: number,
@@ -179,10 +179,10 @@ export class LinkController {
       isInMyCollection: updatedLink.isInMyCollection,
       isRead: updatedLink.isRead,
       createdAt: updatedLink.createdAt,
-      cloud: updatedLink.cloud
+      kloud: updatedLink.kloud
         ? {
-            id: updatedLink.cloud.id,
-            name: updatedLink.cloud.name,
+            id: updatedLink.kloud.id,
+            name: updatedLink.kloud.name,
           }
         : null,
     };

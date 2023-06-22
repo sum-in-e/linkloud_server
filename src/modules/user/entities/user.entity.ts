@@ -1,4 +1,4 @@
-import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
+import { Kloud } from 'src/modules/kloud/entities/kloud.entity';
 import { Link } from 'src/modules/link/entities/link.entity';
 import { AuthMethodType } from 'src/modules/user/types/user.type';
 import {
@@ -56,9 +56,9 @@ export class User extends BaseEntity {
   })
   links!: Link[] | [];
 
-  @OneToMany(() => Cloud, (cloud) => cloud.user, {
+  @OneToMany(() => Kloud, (kloud) => kloud.user, {
     onDelete: 'CASCADE', // 유저가 삭제될 때 연결된 클라우드도 삭제
     onUpdate: 'CASCADE',
   })
-  clouds!: Cloud[] | [];
+  klouds!: Kloud[] | [];
 }
