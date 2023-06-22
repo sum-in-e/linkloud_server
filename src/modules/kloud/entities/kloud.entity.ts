@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Cloud {
+export class Kloud {
   @PrimaryGeneratedColumn({
     type: 'int',
     unsigned: true,
@@ -25,13 +25,13 @@ export class Cloud {
   @Column({ type: 'int' })
   position!: number;
 
-  @ManyToOne(() => User, (user) => user.clouds, {
+  @ManyToOne(() => User, (user) => user.klouds, {
     onDelete: 'CASCADE', // 유저가 삭제될 때, 해당 유저를 참조하고 있는 클라우드도 함께 삭제된다.
     onUpdate: 'CASCADE',
   })
   user!: User;
 
-  @OneToMany(() => Link, (link) => link.cloud, {
+  @OneToMany(() => Link, (link) => link.kloud, {
     onDelete: 'CASCADE', // 클라우드가 삭제될 때 연결된 링크도 삭제
     onUpdate: 'CASCADE',
   })

@@ -12,7 +12,7 @@ import { HttpExceptionFilter } from 'src/core/http/filters/http-exception.filter
 import { HttpResponseBuilder } from 'src/core/http/util/http-response-builder';
 import { SuccessInterceptor } from 'src/core/http/interceptors/http-success.interceptor';
 import { LinkModule } from 'src/modules/link/link.module';
-import { CloudModule } from 'src/modules/cloud/cloud.module';
+import { KloudModule } from 'src/modules/kloud/kloud.module';
 import { AuthModule } from 'src/core/auth/auth.module';
 import { GroupsModule } from './modules/group/group.module';
 import { LoggerModule } from 'src/core/logger/logger.module';
@@ -39,7 +39,7 @@ import { SentryModule } from 'src/common/sentry/sentry.module';
     UserModule,
     EmailVerificationModule,
     LinkModule,
-    CloudModule,
+    KloudModule,
     AuthModule,
     GroupsModule,
     LoggerModule,

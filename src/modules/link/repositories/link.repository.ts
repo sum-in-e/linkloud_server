@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, QueryRunner, Repository } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
-import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
+import { Kloud } from 'src/modules/kloud/entities/kloud.entity';
 import { Link } from 'src/modules/link/entities/link.entity';
 import { CreateLinkDto, GetLinksDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
 import { guideLinks } from 'src/modules/link/constants/guide-links.constant';
@@ -14,13 +14,13 @@ export class LinkRepository {
     private readonly linkRepository: Repository<Link>,
   ) {}
 
-  async createLink(body: CreateLinkDto, user: User, cloud: Cloud | null): Promise<Link> {
+  async createLink(body: CreateLinkDto, user: User, kloud: Kloud | null): Promise<Link> {
     const link = new Link();
     link.url = body.url;
     link.thumbnailUrl = body.thumbnailUrl;
     link.title = body.title;
     link.description = body.description;
-    link.cloud = cloud;
+    link.kloud = kloud;
     link.user = user;
 
     return await this.linkRepository.save(link);
@@ -34,7 +34,7 @@ export class LinkRepository {
       link.title = guide.title;
       link.description = guide.description;
       link.memo = guide.memo;
-      link.cloud = guide.cloud;
+      link.kloud = guide.kloud;
       link.user = user;
       return link;
     });
@@ -53,11 +53,11 @@ export class LinkRepository {
   }
 
   async findLinksByParams(user: User, query: GetLinksDto): Promise<{ linkCount: number; links: Link[] }> {
-    const { sort, limit, offset, keyword, isRead, myCollection, cloudId } = query;
+    const { sort, limit, offset, keyword, isRead, myCollection, kloudId } = query;
 
     let queryBuilder = this.linkRepository
       .createQueryBuilder('link')
-      .leftJoinAndSelect('link.cloud', 'cloud')
+      .leftJoinAndSelect('link.kloud', 'kloud')
       .where('link.user.id = :userId', { userId: user.id });
 
     if (isRead !== undefined) {
@@ -70,11 +70,11 @@ export class LinkRepository {
       });
     }
 
-    if (cloudId !== undefined) {
-      if (cloudId === 0) {
-        queryBuilder = queryBuilder.andWhere('link.cloud.id IS NULL');
+    if (kloudId !== undefined) {
+      if (kloudId === 0) {
+        queryBuilder = queryBuilder.andWhere('link.kloud.id IS NULL');
       } else {
-        queryBuilder = queryBuilder.andWhere('link.cloud.id = :cloudId', { cloudId });
+        queryBuilder = queryBuilder.andWhere('link.kloud.id = :kloudId', { kloudId });
       }
     }
 
@@ -99,7 +99,7 @@ export class LinkRepository {
         id: id,
         user: { id: user.id },
       },
-      relations: ['cloud'],
+      relations: ['kloud'],
     });
   }
 
@@ -109,20 +109,20 @@ export class LinkRepository {
     return await this.linkRepository.save(link);
   }
 
-  async updateLink(body: UpdateLinkDto, link: Link, cloud: Cloud | null): Promise<Link> {
+  async updateLink(body: UpdateLinkDto, link: Link, kloud: Kloud | null): Promise<Link> {
     link.url = body.url || link.url;
     link.title = body.title || link.title;
     link.description = body.description !== undefined ? body.description : link.description; // 내용 지우고 저장해서 빈문자열 보낼 수 있음
     link.memo = body.memo !== undefined ? body.memo : link.memo; // 매모 지우고 저장해서 빈문자열 보낼 수 있음
     link.isInMyCollection = body.isInMyCollection !== undefined ? body.isInMyCollection : link.isInMyCollection; // false들어오면 에러 날 수 있어서 삼항 씀
-    link.cloud = body.cloudId !== undefined ? cloud : link.cloud;
+    link.kloud = body.kloudId !== undefined ? kloud : link.kloud;
 
     return await this.linkRepository.save(link);
   }
 
-  async updateLinksCloud(links: Link[], cloud: Cloud | null, queryRunner: QueryRunner): Promise<Link[]> {
+  async updateLinksKloud(links: Link[], kloud: Kloud | null, queryRunner: QueryRunner): Promise<Link[]> {
     links.forEach((link) => {
-      link.cloud = cloud;
+      link.kloud = kloud;
     });
     return await queryRunner.manager.save(links);
   }
@@ -172,9 +172,9 @@ export class LinkRepository {
   async countUncategorizedLinks(user: User): Promise<number> {
     return await this.linkRepository
       .createQueryBuilder('link')
-      .leftJoin('link.cloud', 'cloud')
+      .leftJoin('link.kloud', 'kloud')
       .where('link.user.id = :userId', { userId: user.id })
-      .andWhere('link.cloud.id IS NULL')
+      .andWhere('link.kloud.id IS NULL')
       .getCount();
   }
 }

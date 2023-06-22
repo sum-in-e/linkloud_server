@@ -16,92 +16,92 @@ import { TransactionManager } from 'src/core/tansaction/decorators/transaction.d
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { TransactionInterceptor } from 'src/core/tansaction/interceptors/transaction.interceptor';
-import { CloudService } from 'src/modules/cloud/cloud.service';
-import { CloudNameDto, UpdateCloudPositionDto } from 'src/modules/cloud/dto/cloud.dto';
+import { KloudService } from 'src/modules/kloud/kloud.service';
+import { KloudNameDto, UpdateKloudPositionDto } from 'src/modules/kloud/dto/kloud.dto';
 import { QueryRunner } from 'typeorm';
 @ApiTags('클라우드 APIs')
-@Controller('cloud')
-export class CloudController {
-  constructor(private readonly cloudService: CloudService) {}
+@Controller('kloud')
+export class KloudController {
+  constructor(private readonly kloudService: KloudService) {}
 
   @ApiOperation({ summary: '클라우드 생성' })
-  @ApiResponse({ status: 400, description: ResponseCode.CREATE_CLOUD_MAXIMUM_20 })
+  @ApiResponse({ status: 400, description: ResponseCode.CREATE_KLOUD_MAXIMUM_20 })
   @Post('')
-  async createCloud(@Body(ValidationPipe) body: CloudNameDto, @Req() request: RequestWithUser) {
+  async createKloud(@Body(ValidationPipe) body: KloudNameDto, @Req() request: RequestWithUser) {
     const user = request.user;
-    const cloud = await this.cloudService.createCloud(body, user);
+    const kloud = await this.kloudService.createKloud(body, user);
 
     return {
-      id: cloud.id,
-      name: cloud.name,
+      id: kloud.id,
+      name: kloud.name,
     };
   }
 
   @ApiOperation({ summary: '클라우드 리스트 조회' })
   @Get('list')
-  async getClouds(@Req() request: RequestWithUser) {
+  async getKlouds(@Req() request: RequestWithUser) {
     const user = request.user;
-    const clouds = await this.cloudService.getClouds(user);
+    const klouds = await this.kloudService.getKlouds(user);
 
     return {
-      count: clouds.length,
-      clouds,
+      count: klouds.length,
+      klouds,
     };
   }
 
   @ApiOperation({ summary: '클라우드 개별 조회' })
-  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
+  @ApiResponse({ status: 404, description: ResponseCode.KLOUD_NOT_FOUND })
   @Get(':id')
-  async getCloud(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+  async getKloud(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
     const user = request.user;
-    return await this.cloudService.getCloudByIdAndUser(id, user);
+    return await this.kloudService.getKloudByIdAndUser(id, user);
   }
 
   @ApiOperation({ summary: '클라우드 순서 변경' })
   @ApiResponse({ status: 400, description: ResponseCode.INVALID_NEW_POSITION })
-  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
+  @ApiResponse({ status: 404, description: ResponseCode.KLOUD_NOT_FOUND })
   @Patch('position/:id')
   @UseInterceptors(TransactionInterceptor)
-  async updateCloudPosition(
+  async updateKloudPosition(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: UpdateCloudPositionDto,
+    @Body() body: UpdateKloudPositionDto,
     @Req() request: RequestWithUser,
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = request.user;
-    await this.cloudService.updateCloudPosition(id, body.newPosition, user, queryRunner);
+    await this.kloudService.updateKloudPosition(id, body.newPosition, user, queryRunner);
 
     return {};
   }
 
   @ApiOperation({ summary: '클라우드 수정' })
-  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
+  @ApiResponse({ status: 404, description: ResponseCode.KLOUD_NOT_FOUND })
   @Patch(':id')
-  async updateCloud(
+  async updateKloud(
     @Param('id', ParseIntPipe) id: number,
-    @Body(ValidationPipe) body: CloudNameDto,
+    @Body(ValidationPipe) body: KloudNameDto,
     @Req() request: RequestWithUser,
   ) {
     const user = request.user;
-    const cloud = await this.cloudService.updateCloud(id, body, user);
+    const kloud = await this.kloudService.updateKloud(id, body, user);
 
     return {
-      id: cloud.id,
-      name: cloud.name,
+      id: kloud.id,
+      name: kloud.name,
     };
   }
 
   @ApiOperation({ summary: '클라우드 제거' })
-  @ApiResponse({ status: 404, description: ResponseCode.CLOUD_NOT_FOUND })
+  @ApiResponse({ status: 404, description: ResponseCode.KLOUD_NOT_FOUND })
   @Delete(':id')
   @UseInterceptors(TransactionInterceptor)
-  async deleteCloud(
+  async deleteKloud(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: RequestWithUser,
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = request.user;
-    await this.cloudService.deleteCloud(id, user, queryRunner);
+    await this.kloudService.deleteKloud(id, user, queryRunner);
 
     return {};
   }

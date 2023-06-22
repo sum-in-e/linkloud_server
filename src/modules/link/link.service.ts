@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
-import { Cloud } from 'src/modules/cloud/entities/cloud.entity';
-import { CloudRepository } from 'src/modules/cloud/repository/cloud.repository';
+import { Kloud } from 'src/modules/kloud/entities/kloud.entity';
+import { KloudRepository } from 'src/modules/kloud/repository/kloud.repository';
 import { CreateLinkDto, GetLinksDto, UpdateLinkDto } from 'src/modules/link/dto/link.dto';
 import { Link } from 'src/modules/link/entities/link.entity';
 import { LinkRepository } from 'src/modules/link/repositories/link.repository';
@@ -11,7 +11,7 @@ import { QueryRunner } from 'typeorm';
 
 @Injectable()
 export class LinkService {
-  constructor(private readonly linkRepository: LinkRepository, private readonly cloudRepository: CloudRepository) {}
+  constructor(private readonly linkRepository: LinkRepository, private readonly kloudRepository: KloudRepository) {}
 
   async createGuideLinks(user: User, queryRunner: QueryRunner): Promise<Link[]> {
     try {
@@ -28,10 +28,10 @@ export class LinkService {
   }
 
   async createLink(body: CreateLinkDto, user: User): Promise<Link> {
-    const cloud = await this.validateCloudId(body.cloudId, user);
+    const kloud = await this.validateKloudId(body.kloudId, user);
 
     try {
-      return await this.linkRepository.createLink(body, user, cloud);
+      return await this.linkRepository.createLink(body, user, kloud);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
         status: 500,
@@ -85,15 +85,15 @@ export class LinkService {
   async updateLink(id: number, body: UpdateLinkDto, user: User): Promise<Link> {
     const foundLink = await this.getLinkDetail(id, user);
 
-    let cloud: Cloud | null = null;
+    let kloud: Kloud | null = null;
 
-    if (body.cloudId !== undefined) {
-      // cloudId를 클라이언트에서 넘겼을 때만 cloud 찾는 로직 실행
-      cloud = await this.validateCloudId(body.cloudId, user);
+    if (body.kloudId !== undefined) {
+      // kloudId를 클라이언트에서 넘겼을 때만 kloud 찾는 로직 실행
+      kloud = await this.validateKloudId(body.kloudId, user);
     }
 
     try {
-      return await this.linkRepository.updateLink(body, foundLink, cloud);
+      return await this.linkRepository.updateLink(body, foundLink, kloud);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '수정 실패', { status: 500 });
     }
@@ -110,36 +110,36 @@ export class LinkService {
   }
 
   /**
-   * @description linkIds에 해당하는 링크들의 클라우드를 cloudId에 해당하는 클라우드로 일괄 변경
+   * @description linkIds에 해당하는 링크들의 클라우드를 kloudId에 해당하는 클라우드로 일괄 변경
    */
-  async updateLinksCloud(
+  async updateLinksKloud(
     linkIds: number[],
-    cloudId: number | null,
+    kloudId: number | null,
     user: User,
     queryRunner: QueryRunner,
   ): Promise<Link[]> {
-    if (cloudId === undefined) {
-      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, 'cloudId가 누락되었습니다.');
+    if (kloudId === undefined) {
+      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, 'kloudId가 누락되었습니다.');
     }
 
     const foundLinks = await this.validateLinkIds(linkIds, user, queryRunner);
 
-    let cloud: Cloud | null = null;
+    let kloud: Kloud | null = null;
 
-    if (cloudId) {
+    if (kloudId) {
       try {
-        cloud = await this.cloudRepository.findCloudByIdAndUserWithTransaction(cloudId, user, queryRunner);
+        kloud = await this.kloudRepository.findKloudByIdAndUserWithTransaction(kloudId, user, queryRunner);
       } catch (error) {
         throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
       }
 
-      if (!cloud) {
-        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, ResponseCode.CLOUD_NOT_FOUND, { status: 404 });
+      if (!kloud) {
+        throw new CustomHttpException(ResponseCode.KLOUD_NOT_FOUND, ResponseCode.KLOUD_NOT_FOUND, { status: 404 });
       }
     }
 
     try {
-      return await this.linkRepository.updateLinksCloud(foundLinks, cloud, queryRunner);
+      return await this.linkRepository.updateLinksKloud(foundLinks, kloud, queryRunner);
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '이동 실패', { status: 500 });
     }
@@ -186,27 +186,27 @@ export class LinkService {
   }
 
   /**
-   * @description cloudId에 해당하는 클라우드가 있는지 검증
+   * @description kloudId에 해당하는 클라우드가 있는지 검증
    */
-  private async validateCloudId(cloudId: number | null, user: User): Promise<Cloud | null> {
-    let cloud: Cloud | null = null;
+  private async validateKloudId(kloudId: number | null, user: User): Promise<Kloud | null> {
+    let kloud: Kloud | null = null;
 
-    if (cloudId === undefined) {
-      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, 'cloudId가 누락되었습니다.');
+    if (kloudId === undefined) {
+      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, 'kloudId가 누락되었습니다.');
     }
 
-    if (cloudId) {
+    if (kloudId) {
       try {
-        cloud = await this.cloudRepository.findCloudByIdAndUser(cloudId, user);
+        kloud = await this.kloudRepository.findKloudByIdAndUser(kloudId, user);
       } catch (error) {
         throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
       }
 
-      if (!cloud) {
-        throw new CustomHttpException(ResponseCode.CLOUD_NOT_FOUND, ResponseCode.CLOUD_NOT_FOUND, { status: 404 });
+      if (!kloud) {
+        throw new CustomHttpException(ResponseCode.KLOUD_NOT_FOUND, ResponseCode.KLOUD_NOT_FOUND, { status: 404 });
       }
     }
 
-    return cloud;
+    return kloud;
   }
 }

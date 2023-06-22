@@ -13,7 +13,7 @@ import { JwtUtil } from 'src/modules/user/utils/jwt.util';
 import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao-virification-info.ropository';
 import { JwtService } from '@nestjs/jwt';
 import { LinkModule } from 'src/modules/link/link.module';
-import { CloudModule } from 'src/modules/cloud/cloud.module';
+import { KloudModule } from 'src/modules/kloud/kloud.module';
 import { AuthService } from 'src/core/auth/auth.service';
 import { SentryProvider } from 'src/common/sentry/sentry.provider';
 
@@ -21,7 +21,7 @@ import { SentryProvider } from 'src/common/sentry/sentry.provider';
   imports: [
     TypeOrmModule.forFeature([User, KakaoVericationInfo]),
     forwardRef(() => EmailVerificationModule),
-    forwardRef(() => CloudModule),
+    forwardRef(() => KloudModule),
     forwardRef(() => LinkModule),
     forwardRef(() => UserModule),
     HttpModule,

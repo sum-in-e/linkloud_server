@@ -35,7 +35,7 @@ export class CreateLinkDto {
   @ApiProperty({ description: '클라우드 ID' })
   @IsNumber()
   @IsOptional()
-  cloudId!: number | null;
+  kloudId!: number | null;
 }
 
 export class UpdateLinkDto {
@@ -68,7 +68,7 @@ export class UpdateLinkDto {
   @ApiProperty({ description: '클라우드 ID' })
   @IsInt()
   @IsOptional()
-  cloudId!: number | null;
+  kloudId!: number | null;
 }
 
 export class DeleteLinksDto {
@@ -79,7 +79,7 @@ export class DeleteLinksDto {
   linkIds!: number[];
 }
 
-export class UpdateLinksCloudDto {
+export class UpdateLinksKloudDto {
   @ApiProperty({ description: '클라우드 이동처리할 ID 배열' })
   @IsArray()
   @IsNotEmpty({ each: true })
@@ -90,7 +90,7 @@ export class UpdateLinksCloudDto {
   @IsNotEmpty()
   @IsInt()
   @IsOptional()
-  cloudId!: number | null;
+  kloudId!: number | null;
 }
 
 export class GetLinksDto {
@@ -132,7 +132,7 @@ export class GetLinksDto {
   @IsOptional()
   @IsInt()
   @Transform(({ value }) => Number(value))
-  cloudId?: number;
+  kloudId?: number;
 }
 
 export class GetAnalyzeDto {
