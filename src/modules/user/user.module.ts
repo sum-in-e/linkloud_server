@@ -16,6 +16,7 @@ import { LinkModule } from 'src/modules/link/link.module';
 import { KloudModule } from 'src/modules/kloud/kloud.module';
 import { AuthService } from 'src/core/auth/auth.service';
 import { SentryProvider } from 'src/common/sentry/sentry.provider';
+import { EmailVerificationService } from 'src/modules/email-verification/email-verification.service';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SentryProvider } from 'src/common/sentry/sentry.provider';
     UserService,
     AuthService,
     KakaoOauthService,
+    EmailVerificationService,
     ConfigService,
     JwtService,
     UserRepository,
