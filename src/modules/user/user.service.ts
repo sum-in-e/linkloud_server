@@ -11,9 +11,13 @@ import { UserRepository } from 'src/modules/user/repository/user.repository';
 import { KakaoVericationInfoRepository } from 'src/modules/user/repository/kakao-virification-info.ropository';
 import { KloudRepository } from 'src/modules/kloud/repository/kloud.repository';
 import { LinkRepository } from 'src/modules/link/repositories/link.repository';
+import { IncomingWebhook } from '@slack/client';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class UserService {
+  private webhook: IncomingWebhook;
+  private readonly webhookUrl: string;
   private readonly JWT_SECRET_KEY: string;
   private readonly MODE: string;
 
@@ -27,6 +31,9 @@ export class UserService {
   ) {
     this.JWT_SECRET_KEY = this.configService.getOrThrow('JWT_SECRET_KEY');
     this.MODE = this.configService.getOrThrow('MODE');
+
+    this.webhookUrl = this.configService.getOrThrow('SLACK_WEBHOOK_URL_FOR_SIGNOUT');
+    this.webhook = new IncomingWebhook(this.webhookUrl);
   }
 
   /**
@@ -221,6 +228,43 @@ export class UserService {
     }
   }
 
+  /**
+   * @description 링클라우드 슬랙 채널로 회원탈퇴 사유를 전송합니다.
+   */
+  async sendSignOutReason(reason: string): Promise<void> {
+    try {
+      if (this.webhook) {
+        const message = {
+          text: '🚨링클라우드 회원 탈퇴🚨',
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*탈퇴 사유:* ${reason}`,
+              },
+            },
+            {
+              type: 'context',
+              elements: [
+                {
+                  type: 'mrkdwn',
+                  text: `Occurred at ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
+                },
+              ],
+            },
+          ],
+        };
+        this.webhook.send(message);
+      }
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원탈퇴 실패', { status: 500 });
+    }
+  }
+
+  /**
+   * @description 회원 탈퇴 메서드
+   */
   async deleteUser(user: User, queryRunner: QueryRunner): Promise<void> {
     try {
       const klouds = await this.kloudRepository.findKloudByUser(user, queryRunner);

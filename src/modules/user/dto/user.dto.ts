@@ -79,3 +79,11 @@ export class AuthKakaoQueryTypeDto {
   @IsString()
   return_to!: string;
 }
+
+export class SignOutDto {
+  @ApiProperty({
+    description: '탈퇴 사유',
+  })
+  @IsString()
+  reason!: string;
+}

@@ -66,6 +66,8 @@ jobs:
                   secret: SENTRY_DSN
                 - name: SLACK_WEBHOOK_URL_FOR_SENTRY
                   secret: SLACK_WEBHOOK_URL_FOR_SENTRY
+                - name: SLACK_WEBHOOK_URL_FOR_SIGNOUT
+                  secret: SLACK_WEBHOOK_URL_FOR_SIGNOUT
                 - name: CLIENT_URL
                   secret: CLIENT_URL
                 - name: HOST

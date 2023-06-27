@@ -2,12 +2,13 @@ import { QueryRunner } from 'typeorm';
 import { Controller, Get, Post, Body, UsePipes, Query, Res, UseInterceptors, Req, Delete } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { Response, Request, CookieOptions } from 'express';
+import { Response, Request } from 'express';
 import {
   AuthKakaoQueryTypeDto,
   KakaoCodeDto,
   KakaoSignUpDto,
   LoginDto,
+  SignOutDto,
   SignUpDto,
 } from 'src/modules/user/dto/user.dto';
 import { SignUpPipe } from 'src/modules/user/pipes/signup.pipe';
@@ -266,12 +267,14 @@ export class UserController {
   @Delete()
   @UseInterceptors(TransactionInterceptor)
   async deleteMe(
+    @Query() query: SignOutDto,
     @Res({ passthrough: true }) response: Response,
     @Req() request: RequestWithUser,
     @TransactionManager() queryRunner: QueryRunner,
   ) {
     const user = request.user;
 
+    await this.userService.sendSignOutReason(query.reason);
     await this.userService.deleteUser(user, queryRunner);
     await this.authService.expireTokens(response);
 
