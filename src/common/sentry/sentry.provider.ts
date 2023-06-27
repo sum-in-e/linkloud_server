@@ -11,8 +11,8 @@ export class SentryProvider {
   private readonly webhookUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.sentryDSN = configService.getOrThrow('SENTRY_DSN');
-    this.webhookUrl = configService.getOrThrow('SLACK_WEBHOOK_URL_FOR_SENTRY');
+    this.sentryDSN = this.configService.getOrThrow('SENTRY_DSN');
+    this.webhookUrl = this.configService.getOrThrow('SLACK_WEBHOOK_URL_FOR_SENTRY');
 
     Sentry.init({
       dsn: this.sentryDSN,
