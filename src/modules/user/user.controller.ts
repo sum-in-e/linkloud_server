@@ -25,6 +25,7 @@ import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import * as querystring from 'querystring';
 import { parse } from 'querystring';
 import { cookieOptions } from 'src/modules/user/utils/cookie';
+import { EmailVerificationService } from 'src/modules/email-verification/email-verification.service';
 
 @ApiTags('유저 APIs')
 @Controller('user')
@@ -39,6 +40,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly linkService: LinkService,
+    private readonly emailVerificationService: EmailVerificationService,
     private readonly authService: AuthService,
     private readonly kakaoOauthService: KakaoOauthService,
     private readonly configService: ConfigService,
@@ -77,6 +79,7 @@ export class UserController {
   ) {
     const user = await this.userService.createUser(body, queryRunner);
 
+    await this.emailVerificationService.deleteVerificationCode(user, queryRunner);
     await this.userService.updateLastLoginAt(user, queryRunner);
     await this.linkService.createGuideLinks(user, queryRunner); // 가이드용 링크 아이템 생성
     await this.authService.generateTokens(user.id, user.email, response); // 토큰 생성
@@ -193,6 +196,7 @@ export class UserController {
   ) {
     const user = await this.userService.createUserByKakao(body, queryRunner);
 
+    await this.userService.deleteKakaoVerificationInfo(user, queryRunner);
     await this.userService.updateLastLoginAt(user, queryRunner);
     await this.linkService.createGuideLinks(user, queryRunner);
     await this.authService.generateTokens(user.id, user.email, response);

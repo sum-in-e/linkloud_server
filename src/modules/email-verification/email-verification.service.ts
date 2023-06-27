@@ -8,6 +8,7 @@ import * as path from 'path';
 import { EmailVerificationRepository } from 'src/modules/email-verification/repository/email-verification.repository';
 import { UserRepository } from 'src/modules/user/repository/user.repository';
 import { QueryRunner } from 'typeorm';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @Injectable()
 export class EmailVerificationService {
@@ -77,6 +78,16 @@ export class EmailVerificationService {
       return { email: emailVerificationInfo.email };
     } catch (error) {
       throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '인증번호 확인에 실패하였습니다.', {
+        status: 500,
+      });
+    }
+  }
+
+  async deleteVerificationCode(user: User, queryRunner: QueryRunner) {
+    try {
+      await this.emailVerificationRepository.deleteEmailVerification(user.email, queryRunner);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원가입에 실패하였습니다.', {
         status: 500,
       });
     }

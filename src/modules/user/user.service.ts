@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcrypt';
-import { QueryRunner } from 'typeorm';
+import { DeleteResult, QueryRunner } from 'typeorm';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { EmailVerificationRepository } from 'src/modules/email-verification/repository/email-verification.repository';
@@ -102,6 +102,17 @@ export class UserService {
       };
     } catch (error) {
       return { error: '회원가입에 실패하였습니다.' };
+    }
+  }
+
+  /**
+   * @description 카카오 회원가입 시 kakao-verification-info DB에서 유저의 카카오 인증 정보 데이터 삭제
+   */
+  async deleteKakaoVerificationInfo(user: User, queryRunner: QueryRunner): Promise<DeleteResult> {
+    try {
+      return await this.kakaoVericationInfoRepository.deleteKakaoVerificationInfo(user.email, queryRunner);
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '회원가입에 실패하였습니다.', { status: 500 });
     }
   }
 
