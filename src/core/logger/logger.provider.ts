@@ -26,7 +26,7 @@ export class CustomLogger {
         // combine -> 여러 가지 포맷을 결합하여 로그 메시지의 최종 형태를 정의
         winston.format.colorize(),
         winston.format.timestamp({
-          format: () => dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          format: () => dayjs().add(9, 'hour').format('YYYY-MM-DD HH:mm:ss'),
         }),
         winston.format.json(),
       ),

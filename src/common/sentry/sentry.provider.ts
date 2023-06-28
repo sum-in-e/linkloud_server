@@ -47,7 +47,7 @@ export class SentryProvider {
             elements: [
               {
                 type: 'mrkdwn',
-                text: `Occurred at ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
+                text: `Occurred at ${dayjs().add(9, 'hour').format('YYYY-MM-DD HH:mm:ss')}`,
               },
             ],
           },
