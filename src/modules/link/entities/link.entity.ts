@@ -33,9 +33,6 @@ export class Link {
   @Column({ type: 'text' })
   memo = ''; // 타입을 TEXT로 하되 클라이언트에서 글자 제한을 둘까?
 
-  @Column({ type: 'text' })
-  test = ''; // 타입을 TEXT로 하되 클라이언트에서 글자 제한을 둘까?
-
   @Column({ default: false })
   isInMyCollection!: boolean;
 
