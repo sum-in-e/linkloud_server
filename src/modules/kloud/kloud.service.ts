@@ -11,12 +11,16 @@ import { QueryRunner } from 'typeorm';
 export class KloudService {
   constructor(private readonly kloudRepository: KloudRepository) {}
   async createKloud(body: KloudNameDto, user: User): Promise<Kloud> {
+    if (body.name.length > 50 || body.name.length === 0) {
+      throw new CustomHttpException(ResponseCode.KLOUD_NAME_MAXIMUM_50, '클라우드 이름은 1~50자 이내로 작성해 주세요.');
+    }
+
     const userKloudCount = await this.kloudRepository.countUserKlouds(user);
 
     if (userKloudCount >= 20) {
       throw new CustomHttpException(
         ResponseCode.CREATE_KLOUD_MAXIMUM_20,
-        '클라우드는 유저당 20개 까지 생성 가능합니다',
+        '유저당 최대 20개의 클라우드까지 생성 가능합니다.',
       );
     }
 
@@ -24,7 +28,9 @@ export class KloudService {
       const maxPositionKloud = await this.kloudRepository.findMaxPositionKloud(user);
       return await this.kloudRepository.createKloud(body.name, user, maxPositionKloud);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 생성 실패', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 생성에 실패하였습니다.', {
+        status: 500,
+      });
     }
   }
 

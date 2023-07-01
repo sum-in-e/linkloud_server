@@ -28,10 +28,10 @@ export class Link {
   title!: string;
 
   @Column({ type: 'text' })
-  description!: string; // 글자수 제한이 없으니 클라이언트에서 보여줄 때 ellipsis 처리 필요
+  description!: string;
 
   @Column({ type: 'text' })
-  memo = ''; // 타입을 TEXT로 하되 클라이언트에서 글자 제한을 둘까?
+  memo = '';
 
   @Column({ default: false })
   isInMyCollection!: boolean;
