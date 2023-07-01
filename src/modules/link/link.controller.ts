@@ -38,7 +38,7 @@ export class LinkController {
 
   @ApiOperation({ summary: '메타태그 기반 링크 데이터 추출' })
   @ApiResponse({ status: 400, description: ResponseCode.INVALID_URL })
-  @Get('analyze')
+  @Post('analyze')
   @IsPublic()
   async getAnalyze(@Query() query: GetAnalyzeDto) {
     return await this.linkAnalyzeService.linkAnalyze(query.url);

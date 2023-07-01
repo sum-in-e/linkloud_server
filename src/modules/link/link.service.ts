@@ -199,11 +199,15 @@ export class LinkService {
       try {
         kloud = await this.kloudRepository.findKloudByIdAndUser(kloudId, user);
       } catch (error) {
-        throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
+        throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드를 조회하는 데에 실패하였습니다.', {
+          status: 500,
+        });
       }
 
       if (!kloud) {
-        throw new CustomHttpException(ResponseCode.KLOUD_NOT_FOUND, ResponseCode.KLOUD_NOT_FOUND, { status: 404 });
+        throw new CustomHttpException(ResponseCode.KLOUD_NOT_FOUND, '선택한 클라우드를 찾을 수 없습니다.', {
+          status: 404,
+        });
       }
     }
 
