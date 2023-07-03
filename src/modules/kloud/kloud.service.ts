@@ -12,7 +12,7 @@ export class KloudService {
   constructor(private readonly kloudRepository: KloudRepository) {}
   async createKloud(body: KloudNameDto, user: User): Promise<Kloud> {
     if (body.name.length > 50 || body.name.length === 0) {
-      throw new CustomHttpException(ResponseCode.KLOUD_NAME_MAXIMUM_50, '클라우드 이름은 1~50자 이내로 작성해 주세요.');
+      throw new CustomHttpException(ResponseCode.KLOUD_NAME_MAXIMUM_50, '클라우드 이름을 1~50자 이내로 작성해 주세요.');
     }
 
     const userKloudCount = await this.kloudRepository.countUserKlouds(user);
@@ -53,11 +53,9 @@ export class KloudService {
   }
 
   async updateKloudPosition(id: number, newPosition: number, user: User, queryRunner: QueryRunner): Promise<void> {
-    if (!newPosition) {
-      throw new CustomHttpException(
-        ResponseCode.INVALID_NEW_POSITION,
-        '변경할 position이 올바르게 전달되지 않았습니다.',
-      );
+    if (newPosition === null || newPosition === undefined) {
+      // 조건을 !newPosition으로 하면 0도 falsy한 값으로 처리되서 조건에 걸린다.
+      throw new CustomHttpException(ResponseCode.INVALID_NEW_POSITION, '변경할 위치가 올바르게 전달되지 않았습니다.');
     }
 
     const kloud = await this.kloudRepository.findKloudByIdAndUserWithTransaction(id, user, queryRunner);
@@ -82,7 +80,9 @@ export class KloudService {
       await this.kloudRepository.updateKloudPosition(kloud, newPosition, queryRunner); // 선택한 클라우드의 위치를 수정
       await this.kloudRepository.updateOtherKloudsPosition(prevPosition, newPosition, id, user, queryRunner); // 위 클라우드 위치 변경에 영향 받는 클라우드들의 Position 수정
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 순서 변경 실패', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 순서 변경에 실패하였습니다.', {
+        status: 500,
+      });
     }
   }
 
@@ -96,7 +96,9 @@ export class KloudService {
     try {
       return await this.kloudRepository.updateKloud(body, kloud);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 수정 실패', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 수정에 실패하였습니다.', {
+        status: 500,
+      });
     }
   }
 
@@ -111,7 +113,9 @@ export class KloudService {
       const deletedKloud = await this.kloudRepository.deleteKloud(kloud, queryRunner);
       await this.kloudRepository.updateKloudsPositionAfterDeletion(user, deletedKloud, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 제거 실패', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드 제거에 실패하였습니다.', {
+        status: 500,
+      });
     }
   }
 }
