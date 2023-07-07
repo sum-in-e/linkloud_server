@@ -143,7 +143,7 @@ export class LinkController {
 
   @ApiOperation({ summary: '선택한 링크 일괄 제거' })
   @ApiResponse({ status: 404, description: ResponseCode.LINK_NOT_FOUND })
-  @Delete('ids/delete')
+  @Post('ids/delete') // 일반적으로 POST 메서드는 리소스를 생성하는 데 사용되지만 body를 받을 수 없기 때문에 다수의 아이템을 삭제하는 경우는 이렇게 예외적으로 사용한다.
   @UseInterceptors(TransactionInterceptor)
   async deleteLinks(
     @Body(ValidationPipe) body: DeleteLinksDto,

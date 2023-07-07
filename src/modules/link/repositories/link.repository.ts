@@ -87,7 +87,7 @@ export class LinkRepository {
       );
     }
 
-    const linkCount = await queryBuilder.getCount(); // 별도의 쿼리 빌더를 생성하여 linkCount를 계산한다. links에 같이 count 까지 나오게하면 skip, take에 영향받은 count가 받아지기 때문에
+    const linkCount = await queryBuilder.getCount(); // 별도의 쿼리 빌더를 생성하여 linkCount를 계산한다. links에 같이 count 까지 나오게하면 전체 count가 나오지 않음. (skip, take에 영향을 받기 때문)
     const links = await queryBuilder.orderBy('link.createdAt', sort).skip(offset).take(limit).getMany();
 
     return { linkCount, links };
