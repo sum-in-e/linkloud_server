@@ -76,7 +76,7 @@ export class LinkService {
     try {
       return await this.linkRepository.updateLinkRead(foundLink);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '열람 처리 실패', {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '링크 열람 처리에 실패하였습니다.', {
         status: 500,
       });
     }
@@ -119,7 +119,7 @@ export class LinkService {
     queryRunner: QueryRunner,
   ): Promise<Link[]> {
     if (kloudId === undefined) {
-      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, 'kloudId가 누락되었습니다.');
+      throw new CustomHttpException(ResponseCode.INVALID_PARAMS, '이동할 클라우드가 전달되지 않았습니다.');
     }
 
     const foundLinks = await this.validateLinkIds(linkIds, user, queryRunner);
@@ -130,18 +130,26 @@ export class LinkService {
       try {
         kloud = await this.kloudRepository.findKloudByIdAndUserWithTransaction(kloudId, user, queryRunner);
       } catch (error) {
-        throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
+        throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '클라우드를 찾을 수 없습니다.', {
+          status: 500,
+        });
       }
 
       if (!kloud) {
-        throw new CustomHttpException(ResponseCode.KLOUD_NOT_FOUND, ResponseCode.KLOUD_NOT_FOUND, { status: 404 });
+        throw new CustomHttpException(ResponseCode.KLOUD_NOT_FOUND, '선택한 클라우드를 찾을 수 없습니다.', {
+          status: 404,
+        });
       }
     }
 
     try {
       return await this.linkRepository.updateLinksKloud(foundLinks, kloud, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '이동 실패', { status: 500 });
+      throw new CustomHttpException(
+        ResponseCode.INTERNAL_SERVER_ERROR,
+        '선택한 링크의 클라우드를 변경하지 못하였습니다. 다시 시도해 주세요.',
+        { status: 500 },
+      );
     }
   }
 
@@ -154,7 +162,9 @@ export class LinkService {
     try {
       return await this.linkRepository.deleteLinks(foundLinks, queryRunner);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '선택한 링크 삭제에 실패하였습니다.', {
+        status: 500,
+      });
     }
   }
 
