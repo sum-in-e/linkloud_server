@@ -79,6 +79,7 @@ export class LinkController {
         memo: link.memo,
         isInMyCollection: link.isInMyCollection,
         isRead: link.isRead,
+        createdAt: link.createdAt,
         kloud: link.kloud
           ? {
               id: link.kloud.id,
