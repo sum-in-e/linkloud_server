@@ -39,11 +39,6 @@ export class CreateLinkDto {
 }
 
 export class UpdateLinkDto {
-  @ApiProperty({ description: '링크의 URL' })
-  @IsUrl()
-  @IsOptional()
-  url!: string;
-
   @ApiProperty({ description: '링크의 제목' })
   @IsString()
   @MinLength(1)

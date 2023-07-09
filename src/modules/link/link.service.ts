@@ -95,7 +95,11 @@ export class LinkService {
     try {
       return await this.linkRepository.updateLink(body, foundLink, kloud);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '수정 실패', { status: 500 });
+      throw new CustomHttpException(
+        ResponseCode.INTERNAL_SERVER_ERROR,
+        '링크 수정에 실패하였습니다. 다시 시도해 주세요.',
+        { status: 500 },
+      );
     }
   }
 
@@ -105,7 +109,11 @@ export class LinkService {
     try {
       return await this.linkRepository.deleteLinkById(foundLink);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '삭제 실패', { status: 500 });
+      throw new CustomHttpException(
+        ResponseCode.INTERNAL_SERVER_ERROR,
+        '링크 삭제에 실패하였습니다. 다시 시도해 주세요.',
+        { status: 500 },
+      );
     }
   }
 

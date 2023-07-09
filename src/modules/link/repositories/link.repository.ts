@@ -110,7 +110,6 @@ export class LinkRepository {
   }
 
   async updateLink(body: UpdateLinkDto, link: Link, kloud: Kloud | null): Promise<Link> {
-    link.url = body.url || link.url;
     link.title = body.title || link.title;
     link.description = body.description !== undefined ? body.description : link.description; // 내용 지우고 저장해서 빈문자열 보낼 수 있음
     link.memo = body.memo !== undefined ? body.memo : link.memo; // 매모 지우고 저장해서 빈문자열 보낼 수 있음
