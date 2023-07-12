@@ -72,6 +72,10 @@ jobs:
                   secret: CLIENT_URL
                 - name: HOST
                   secret: HOST
+                - name: VAPID_PUBLIC_KEY
+                  secret: VAPID_PUBLIC_KEY
+                - name: VAPID_PRIVATE_KEY
+                  secret: VAPID_PRIVATE_KEY
             context:
               git:
                 ref: ${{ github.ref }}

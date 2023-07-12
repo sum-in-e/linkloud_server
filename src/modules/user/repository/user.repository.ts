@@ -65,4 +65,19 @@ export class UserRepository {
   async deleteUser(user: User, queryRunner: QueryRunner): Promise<void> {
     await queryRunner.manager.softDelete(User, user.id);
   }
+
+  /**
+   * @description 정상 상태의 유저 중 미열람 링크가 10개 이상이고 구독 등록이 되어있는 유저를 찾습니다.
+   */
+  async findUsersWithUnreadLinksOverTen(): Promise<User[]> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .innerJoinAndSelect('user.subscriptions', 'subscription') //
+      .leftJoin('user.links', 'link', 'link.isRead = :isRead', { isRead: false })
+      .andWhere('user.isInactive = :isInactive', { isInactive: false }) // 휴면 상태 아닌 유저
+      .andWhere('user.deletedAt IS NULL') // 탈퇴 상태 아닌 유저
+      .groupBy('user.id')
+      .having('COUNT(link.id) > 10')
+      .getMany();
+  }
 }
