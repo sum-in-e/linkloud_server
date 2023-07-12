@@ -1,5 +1,6 @@
 import { Kloud } from 'src/modules/kloud/entities/kloud.entity';
 import { Link } from 'src/modules/link/entities/link.entity';
+import { Subscription } from 'src/modules/notification/entities/subscription.entity';
 import { AuthMethodType } from 'src/modules/user/types/user.type';
 import {
   BaseEntity,
@@ -61,4 +62,10 @@ export class User extends BaseEntity {
     onUpdate: 'CASCADE',
   })
   klouds!: Kloud[] | [];
+
+  @OneToMany(() => Subscription, (subscription) => subscription.user, {
+    onDelete: 'CASCADE', // 유저가 삭제될 때 연결된 구독도 삭제
+    onUpdate: 'CASCADE',
+  })
+  subscriptions!: Subscription[] | [];
 }

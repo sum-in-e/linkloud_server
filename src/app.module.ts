@@ -17,9 +17,14 @@ import { AuthModule } from 'src/core/auth/auth.module';
 import { GroupsModule } from './modules/group/group.module';
 import { LoggerModule } from 'src/core/logger/logger.module';
 import { SentryModule } from 'src/common/sentry/sentry.module';
+import { NotificationnModule } from './modules/notification/notification.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationScheduler } from 'src/modules/notification/scheduler/notificationScheduler';
+import { NotificationService } from 'src/modules/notification/services/notification.service';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         DB_HOST: Joi.string().required(),
@@ -44,12 +49,15 @@ import { SentryModule } from 'src/common/sentry/sentry.module';
     GroupsModule,
     LoggerModule,
     SentryModule,
+    NotificationnModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     ConfigService,
     HttpResponseBuilder,
+    NotificationScheduler,
+    NotificationService,
     {
       provide: APP_INTERCEPTOR,
       useClass: SuccessInterceptor,
