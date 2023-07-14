@@ -70,14 +70,31 @@ export class UserRepository {
    * @description 정상 상태의 유저 중 미열람 링크가 10개 이상이고 구독 등록이 되어있는 유저를 찾습니다.
    */
   async findUsersWithUnreadLinksOverTen(): Promise<User[]> {
-    return this.userRepository
+    return await this.userRepository
       .createQueryBuilder('user')
-      .innerJoinAndSelect('user.subscriptions', 'subscription') //
-      .leftJoin('user.links', 'link', 'link.isRead = :isRead', { isRead: false })
-      .andWhere('user.isInactive = :isInactive', { isInactive: false }) // 휴면 상태 아닌 유저
-      .andWhere('user.deletedAt IS NULL') // 탈퇴 상태 아닌 유저
+      .leftJoinAndSelect('user.subscriptions', 'subscription')
+      .leftJoin('user.links', 'link')
+      .select([
+        'user.id',
+        'user.email',
+        'user.password',
+        'user.name',
+        'user.method',
+        'user.isInactive',
+        'user.inactivedAt',
+        'user.createdAt',
+        'user.updatedAt',
+        'user.deletedAt',
+        'user.lastLoginAt',
+        'subscription.id',
+        'subscription.endpoint',
+        'subscription.keys',
+      ])
+      .where('user.isInactive = :isInactive', { isInactive: false })
+      .andWhere('user.deletedAt IS NULL')
       .groupBy('user.id')
-      .having('COUNT(link.id) >= 10')
+      .addGroupBy('subscription.id')
+      .having('COUNT(link.id) > 10 AND SUM(CASE WHEN link.isRead = false THEN 1 ELSE 0 END) > 10')
       .getMany();
   }
 }
