@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequestWithUser } from 'src/core/http/types/http-request.type';
 import { SubscriptionDto } from 'src/modules/notification/dto/subscription.dto';
@@ -8,15 +8,6 @@ import { SubscriptionService } from 'src/modules/notification/services/subscript
 @Controller('subscription')
 export class NotificationController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
-
-  @ApiOperation({
-    summary: 'VAPID 공개키 조회 API',
-    description: '서버에서 생성된 VAPID 공개키를 클라이언트에게 제공합니다.',
-  })
-  @Get('publicKey')
-  async getPublicKey() {
-    return await this.subscriptionService.getPublicKey();
-  }
 
   @ApiOperation({
     summary: '구독 정보 저장 API',
@@ -39,5 +30,17 @@ export class NotificationController {
     const user = request.user;
 
     return await this.subscriptionService.checkSubscription(body, user);
+  }
+
+  @ApiOperation({
+    summary: '푸쉬 구독 정보 삭제 API',
+    description: 'DB에 저장된 푸쉬 구독 정보를 삭제합니다.',
+  })
+  @Post('delete-subscription')
+  async deleteSubscription(@Body() body: SubscriptionDto, @Req() request: RequestWithUser) {
+    const user = request.user;
+
+    await this.subscriptionService.deleteSubscription(body, user);
+    return {};
   }
 }

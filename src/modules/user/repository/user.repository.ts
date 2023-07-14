@@ -77,7 +77,7 @@ export class UserRepository {
       .andWhere('user.isInactive = :isInactive', { isInactive: false }) // 휴면 상태 아닌 유저
       .andWhere('user.deletedAt IS NULL') // 탈퇴 상태 아닌 유저
       .groupBy('user.id')
-      .having('COUNT(link.id) > 10')
+      .having('COUNT(link.id) >= 10')
       .getMany();
   }
 }
