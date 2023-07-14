@@ -26,7 +26,7 @@ export class SubscriptionRepository {
     return await this.subscriptionRepository.save(subscription);
   }
 
-  async removeInvalidSubscription(endpoint: string): Promise<DeleteResult> {
-    return await this.subscriptionRepository.delete({ endpoint });
+  async removeInvalidSubscription(endpoint: string, user: User): Promise<DeleteResult> {
+    return await this.subscriptionRepository.delete({ endpoint, user: { id: user.id } });
   }
 }
