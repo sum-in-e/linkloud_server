@@ -36,13 +36,11 @@ export class SubscriptionService {
   /**
    * @description 구독 정보가 DB에 등록되어있는지 확인
    */
-  async checkSubscription(body: SubscriptionDto, user: User): Promise<{ status: 'valid' }> {
+  async checkSubscription(body: SubscriptionDto, user: User): Promise<{ status: 'valid' | 'invalid' }> {
     const result = await this.subscriptionRepository.findSubscription(body, user);
 
     if (!result) {
-      throw new CustomHttpException(ResponseCode.SUBSCRIPTION_NOT_FOUND, ResponseCode.SUBSCRIPTION_NOT_FOUND, {
-        status: 404,
-      });
+      return { status: 'invalid' };
     }
 
     return { status: 'valid' };
