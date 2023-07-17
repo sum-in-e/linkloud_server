@@ -6,10 +6,12 @@ import { NotificationService } from 'src/modules/notification/services/notificat
 export class NotificationScheduler {
   constructor(private readonly notificationService: NotificationService) {}
   @Cron(CronExpression.EVERY_MINUTE)
-  @Cron('0 21 * * 2', { timeZone: 'Asia/Seoul' }) // 매주 화요일 오후 9시 (KST)
-  @Cron('0 22 * * 4', { timeZone: 'Asia/Seoul' }) // 매주 목요일 오후 10시 (KST)
-  @Cron('0 22 * * 0', { timeZone: 'Asia/Seoul' }) // 매주 일요일 오후 10시 (KST)
+  @Cron('0 0 21 * * *', { timeZone: 'Asia/Seoul' }) // 매일 오후 9시 (KST)
   async handleSundayCron(): Promise<void> {
     await this.notificationService.sendNotification();
   }
 }
+
+// @Cron('0 21 * * 2', { timeZone: 'Asia/Seoul' }) // 매주 화요일 오후 9시 (KST)
+// @Cron('0 22 * * 4', { timeZone: 'Asia/Seoul' }) // 매주 목요일 오후 10시 (KST)
+// @Cron('0 22 * * 0', { timeZone: 'Asia/Seoul' }) // 매주 일요일 오후 10시 (KST)
