@@ -1,5 +1,6 @@
 const url = 'https://linkloud.co.kr';
-const thumbnailUrl = 'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1687269892/linkloud/emtygeehcgigfn9wlhw3.jpg';
+const thumbnailUrl =
+  'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1688032357/linkloud/linkloud_thumbnail_cp3joj.png';
 
 export const guideLinks = [
   {

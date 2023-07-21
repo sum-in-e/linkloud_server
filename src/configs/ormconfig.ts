@@ -22,6 +22,7 @@ export class typeORMConfig implements TypeOrmOptionsFactory {
     // const dbSync = isDevelopment ? 'true' : 'false';
     const dbLogging = isDevelopment ? 'false' : 'true';
 
+    // 🚨ormconfig 수정 시 datasource.ts도 동일하게 수정 되어야합니다.
     return {
       type: 'mysql',
       host: dbHost,
