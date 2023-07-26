@@ -3,8 +3,8 @@ import { CookieOptions } from 'express';
 export const cookieOptions = (mode: string, host: string) => {
   return {
     httpOnly: true,
-    secure: mode === 'production' ? true : false,
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     path: '/',
     domain: host,
   } as CookieOptions;
