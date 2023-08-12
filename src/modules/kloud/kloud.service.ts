@@ -43,7 +43,7 @@ export class KloudService {
   }
 
   async getKloudByIdAndUser(id: number, user: User): Promise<Kloud> {
-    const kloud = await this.kloudRepository.getKloudWithLinkCount(id, user);
+    const kloud = await this.kloudRepository.getKloudById(id, user);
 
     if (!Kloud || kloud === null) {
       throw new CustomHttpException(ResponseCode.KLOUD_NOT_FOUND, '클라우드를 찾을 수 없습니다', { status: 404 });

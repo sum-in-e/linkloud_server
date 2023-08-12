@@ -87,6 +87,9 @@ export class KloudRepository {
     return this.kloudRepository
       .createQueryBuilder('kloud')
       .loadRelationCountAndMap('kloud.linkCount', 'kloud.links') // 클라우드에 연결된 링크의 개수를 로드하고, linkCount 속성에 매핑
+      .loadRelationCountAndMap('kloud.unreadLinkCount', 'kloud.links', 'unreadLink', (qb) =>
+        qb.where('unreadLink.isRead = :isRead', { isRead: false }),
+      ) // 클라우드에 연결된 링크 중 읽지 않은 링크의 개수를 로드하고, unreadLinkCount 속성에 매핑
       .select(['kloud.id', 'kloud.name', 'kloud.position'])
       .where('kloud.user.id = :userId', { userId: user.id })
       .orderBy('kloud.position', 'DESC')
@@ -96,7 +99,7 @@ export class KloudRepository {
   /**
    * @description id에 해당하는 클라우드를 조회하고 연결된 링크 개수를 함께 반환합니다.
    */
-  async getKloudWithLinkCount(id: number, user: User): Promise<Kloud | null> {
+  async getKloudById(id: number, user: User): Promise<Kloud | null> {
     return this.kloudRepository
       .createQueryBuilder('kloud')
       .loadRelationCountAndMap('kloud.linkCount', 'kloud.links') // 클라우드에 연결된 링크의 개수를 로드하고, linkCount 속성에 매핑

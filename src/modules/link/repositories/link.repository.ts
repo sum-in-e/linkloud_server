@@ -110,11 +110,11 @@ export class LinkRepository {
   }
 
   async updateLink(body: UpdateLinkDto, link: Link, kloud: Kloud | null): Promise<Link> {
-    link.title = body.title || link.title;
-    link.description = body.description !== undefined ? body.description : link.description; // 내용 지우고 저장해서 빈문자열 보낼 수 있음
-    link.memo = body.memo !== undefined ? body.memo : link.memo; // 매모 지우고 저장해서 빈문자열 보낼 수 있음
-    link.isInMyCollection = body.isInMyCollection !== undefined ? body.isInMyCollection : link.isInMyCollection; // false들어오면 에러 날 수 있어서 삼항 씀
-    link.kloud = body.kloudId !== undefined ? kloud : link.kloud;
+    if (body.title) link.title = body.title;
+    if (body.description !== undefined) link.description = body.description; // 빈 문자열을 보낼 수 있기 때문에 falsy한 값으로만 식별하면 안 된다.
+    if (body.memo !== undefined) link.memo = body.memo;
+    if (body.isInMyCollection !== undefined) link.isInMyCollection = body.isInMyCollection;
+    if (body.kloudId !== undefined) link.kloud = kloud;
 
     return await this.linkRepository.save(link);
   }
