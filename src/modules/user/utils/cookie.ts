@@ -1,6 +1,6 @@
 import { CookieOptions } from 'express';
 
-export const cookieOptions = (mode: string, host: string) => {
+export const cookieOptions = (host: string) => {
   return {
     httpOnly: true,
     secure: true,
