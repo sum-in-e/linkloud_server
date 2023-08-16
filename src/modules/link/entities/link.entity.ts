@@ -18,10 +18,10 @@ export class Link {
   })
   id!: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 1000 })
   url!: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 1000 })
   thumbnailUrl!: string;
 
   @Column({ type: 'text' })
