@@ -15,7 +15,7 @@ import { Transform } from 'class-transformer';
 
 export class CreateLinkDto {
   @ApiProperty({ description: '링크의 URL' })
-  @IsUrl({ require_tld: false }) // require_tld: false => 최상위 도메인이 아니어도 되게 설정
+  @IsString()
   url!: string;
 
   @ApiProperty({ description: '링크의 썸네일 URL' })
