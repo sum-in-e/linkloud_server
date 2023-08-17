@@ -12,22 +12,33 @@ export class LinkAnalyzeService {
       throw new CustomHttpException(ResponseCode.INVALID_URL, `유효하지 않은 형식의 링크입니다.`);
     }
 
-    // Get HTML and parse metadata
-    const meta = await this.parseMeta(url);
-
     const urlObj = new URL(url);
     const urlWithoutQuery = urlObj.origin + urlObj.pathname;
 
-    const result = {
-      url,
-      title: meta['og:title'] || urlWithoutQuery,
-      thumbnailUrl:
-        meta['og:image'] ||
-        'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1688032357/linkloud/linkloud_thumbnail_cp3joj.png',
-      description: meta['og:description'] || urlWithoutQuery,
-    };
+    try {
+      const meta = await this.parseMeta(url);
 
-    return result;
+      const result = {
+        url,
+        title: meta['og:title'] || urlWithoutQuery,
+        thumbnailUrl:
+          meta['og:image'] ||
+          'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1688032357/linkloud/linkloud_thumbnail_cp3joj.png',
+        description: meta['og:description'] || urlWithoutQuery,
+      };
+
+      return result;
+    } catch (error) {
+      const result = {
+        url,
+        title: urlWithoutQuery,
+        thumbnailUrl:
+          'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1688032357/linkloud/linkloud_thumbnail_cp3joj.png',
+        description: urlWithoutQuery,
+      };
+
+      return result;
+    }
   }
 
   private isValidUrl(url: string) {
@@ -76,7 +87,7 @@ export class LinkAnalyzeService {
         parser.end();
       });
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INVALID_URL, `정보를 가져올 수 없는 링크입니다. 다시 시도해 주세요.`);
+      throw new Error('정보를 가져올 수 없는 링크입니다.');
     }
   }
 }
