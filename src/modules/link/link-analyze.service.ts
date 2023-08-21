@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { URL } from 'url';
+import { thumbnailUrl } from 'src/modules/link/constants/guide-links.constant';
 
 @Injectable()
 export class LinkAnalyzeService {
@@ -21,9 +22,7 @@ export class LinkAnalyzeService {
       const result = {
         url,
         title: meta['og:title'] || urlWithoutQuery,
-        thumbnailUrl:
-          meta['og:image'] ||
-          'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1688032357/linkloud/linkloud_thumbnail_cp3joj.png',
+        thumbnailUrl: meta['og:image'] || thumbnailUrl,
         description: meta['og:description'] || urlWithoutQuery,
       };
 
@@ -32,8 +31,7 @@ export class LinkAnalyzeService {
       const result = {
         url,
         title: urlWithoutQuery,
-        thumbnailUrl:
-          'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1688032357/linkloud/linkloud_thumbnail_cp3joj.png',
+        thumbnailUrl: thumbnailUrl,
         description: urlWithoutQuery,
       };
 
