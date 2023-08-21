@@ -22,7 +22,7 @@ export class LinkAnalyzeService {
       const result = {
         url,
         title: meta['og:title'] || urlWithoutQuery,
-        thumbnailUrl: meta['og:image'] || thumbnailUrl,
+        thumbnailUrl: !this.isValidUrl(meta['og:image']) ? thumbnailUrl : meta['og:image'],
         description: meta['og:description'] || urlWithoutQuery,
       };
 
