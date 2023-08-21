@@ -1,5 +1,5 @@
-const thumbnailUrl =
-  'https://res.cloudinary.com/dqcgvbbv7/image/upload/v1688032357/linkloud/linkloud_thumbnail_cp3joj.png';
+export const thumbnailUrl =
+  'https://res.cloudinary.com/dqcgvbbv7/image/upload/f_auto,q_auto/v1/linkloud/linkloud_thumbnail_cp3joj';
 
 export const guideLinks = [
   {
