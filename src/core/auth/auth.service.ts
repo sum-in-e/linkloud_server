@@ -105,10 +105,16 @@ export class AuthService {
     const payload = { userId, email };
 
     try {
-      const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '7d', secret: this.JWT_SECRET_KEY });
-      const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d', secret: this.JWT_SECRET_KEY });
-      response.cookie('sq', accessToken, cookieOptions(this.HOST));
-      response.cookie('bp', refreshToken, cookieOptions(this.HOST));
+      const accessToken = await this.jwtService.signAsync(payload, {
+        expiresIn: 7 * 24 * 60 * 60, // 초단위로 7일
+        secret: this.JWT_SECRET_KEY,
+      });
+      const refreshToken = await this.jwtService.signAsync(payload, {
+        expiresIn: 30 * 24 * 60 * 60,
+        secret: this.JWT_SECRET_KEY,
+      });
+      response.cookie('sq', accessToken, cookieOptions(this.HOST, 7 * 24 * 60 * 60 * 1000)); // maxAge의 값으로는 이를 밀리세컨드로 변환해 주어야한다
+      response.cookie('bp', refreshToken, cookieOptions(this.HOST, 30 * 24 * 60 * 60 * 1000));
     } catch (error) {
       throw new CustomHttpException(
         ResponseCode.INTERNAL_SERVER_ERROR,
@@ -122,7 +128,7 @@ export class AuthService {
    * @description 액세스토큰과 리프레시 토큰을 만료시키는 메서드
    */
   async expireTokens(response: Response): Promise<void> {
-    response.cookie('sq', '', { ...cookieOptions(this.HOST), maxAge: 0 });
-    response.cookie('bp', '', { ...cookieOptions(this.HOST), maxAge: 0 });
+    response.cookie('sq', '', cookieOptions(this.HOST, 0));
+    response.cookie('bp', '', cookieOptions(this.HOST, 0));
   }
 }
