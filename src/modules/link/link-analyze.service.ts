@@ -1,10 +1,9 @@
-import axios from 'axios';
-import { Parser } from 'htmlparser2';
 import { Injectable } from '@nestjs/common';
 import { CustomHttpException } from 'src/core/http/http-exception';
 import { ResponseCode } from 'src/core/http/types/http-response-code.enum';
 import { URL } from 'url';
 import { thumbnailUrl } from 'src/modules/link/constants/guide-links.constant';
+import getMetaData from 'metadata-scraper';
 
 @Injectable()
 export class LinkAnalyzeService {
@@ -17,13 +16,13 @@ export class LinkAnalyzeService {
     const urlWithoutQuery = urlObj.origin + urlObj.pathname;
 
     try {
-      const meta = await this.parseMeta(url);
+      const { title, description, image } = await getMetaData(url, { timeout: 3000 });
 
       const result = {
         url,
-        title: meta['og:title'] || urlWithoutQuery,
-        thumbnailUrl: !this.isValidUrl(meta['og:image']) ? thumbnailUrl : meta['og:image'],
-        description: meta['og:description'] || urlWithoutQuery,
+        title: title || urlWithoutQuery,
+        description: description || urlWithoutQuery,
+        thumbnailUrl: image || thumbnailUrl,
       };
 
       return result;
@@ -45,47 +44,6 @@ export class LinkAnalyzeService {
       return true;
     } catch (error) {
       return false;
-    }
-  }
-
-  private async parseMeta(url: string): Promise<Record<string, string>> {
-    try {
-      const response = await axios.get(url);
-      const html = response.data;
-
-      return new Promise((resolve) => {
-        const meta: Record<string, string> = {};
-        let isInMetaTag = false;
-        let currentMetaName = '';
-
-        const parser = new Parser({
-          onopentagname(name) {
-            if (name === 'meta') {
-              isInMetaTag = true;
-            }
-          },
-          onattribute(name, value) {
-            if (isInMetaTag && (name === 'name' || name === 'property')) {
-              currentMetaName = value;
-            } else if (isInMetaTag && name === 'content') {
-              meta[currentMetaName] = value;
-            }
-          },
-          onclosetag(name) {
-            if (name === 'meta') {
-              isInMetaTag = false;
-            }
-          },
-          onend() {
-            resolve(meta);
-          },
-        });
-
-        parser.write(html);
-        parser.end();
-      });
-    } catch (error) {
-      throw new Error('정보를 가져올 수 없는 링크입니다.');
     }
   }
 }
