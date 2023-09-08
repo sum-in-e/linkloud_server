@@ -33,7 +33,7 @@ export class LinkService {
     try {
       return await this.linkRepository.createLink(body, user, kloud);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, ResponseCode.INTERNAL_SERVER_ERROR, {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, JSON.stringify(error), {
         status: 500,
       });
     }
@@ -65,18 +65,13 @@ export class LinkService {
     return foundLink;
   }
 
-  async updateLinkRead(id: number, user: User): Promise<Link> {
-    const foundLink = await this.getLinkDetail(id, user);
-
-    if (foundLink.isRead === true) {
-      // 이미 열람 처리된 링크일 경우 DB 업데이트 로직을 실행하지 않고 종료
-      return foundLink;
-    }
+  async addLinkCount(id: number, user: User): Promise<Link> {
+    const link = await this.getLinkDetail(id, user);
 
     try {
-      return await this.linkRepository.updateLinkRead(foundLink);
+      return await this.linkRepository.addLinkCount(link);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '링크 열람 처리에 실패하였습니다.', {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, 'Failed to count', {
         status: 500,
       });
     }

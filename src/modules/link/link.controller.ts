@@ -79,6 +79,9 @@ export class LinkController {
         memo: link.memo,
         isInMyCollection: link.isInMyCollection,
         isRead: link.isRead,
+        clickCount: link.clickCount,
+        clickFrequency: link.clickFrequency,
+        lastClickedAt: link.lastClickedAt,
         createdAt: link.createdAt,
         kloud: link.kloud
           ? {
@@ -106,6 +109,9 @@ export class LinkController {
       memo: link.memo,
       isInMyCollection: link.isInMyCollection,
       isRead: link.isRead,
+      clickCount: link.clickCount,
+      clickFrequency: link.clickFrequency,
+      lastClickedAt: link.lastClickedAt,
       createdAt: link.createdAt,
       kloud: link.kloud
         ? {
@@ -118,12 +124,12 @@ export class LinkController {
     return response;
   }
 
-  @ApiOperation({ summary: '선택한 링크 열람 처리' })
+  @ApiOperation({ summary: '링크 클릭 횟수 카운팅' })
   @ApiResponse({ status: 404, description: ResponseCode.LINK_NOT_FOUND })
-  @Patch(':id/read')
-  async updateLinkRead(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
+  @Patch(':id/click-count')
+  async addLinkCount(@Param('id', ParseIntPipe) id: number, @Req() request: RequestWithUser) {
     const user = request.user;
-    await this.linkService.updateLinkRead(id, user);
+    await this.linkService.addLinkCount(id, user);
     return {};
   }
 
@@ -179,6 +185,9 @@ export class LinkController {
       memo: updatedLink.memo,
       isInMyCollection: updatedLink.isInMyCollection,
       isRead: updatedLink.isRead,
+      clickCount: updatedLink.clickCount,
+      clickFrequency: updatedLink.clickFrequency,
+      lastClickedAt: updatedLink.lastClickedAt,
       createdAt: updatedLink.createdAt,
       kloud: updatedLink.kloud
         ? {
