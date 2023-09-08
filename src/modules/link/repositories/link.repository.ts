@@ -103,9 +103,27 @@ export class LinkRepository {
     });
   }
 
-  async updateLinkRead(link: Link): Promise<Link> {
-    link.isRead = true;
-    link.readAt = new Date();
+  async addLinkCount(link: Link): Promise<Link> {
+    const now = new Date();
+    const newCount = link.clickCount + 1;
+
+    if (link.lastClickedAt) {
+      // 시간을 밀리세컨드 단위로 환산하여 현재와 마지막 클릭 일자 사이의 시간 차이를 계산
+      const hoursDifference = (now.getTime() - link.lastClickedAt.getTime()) / (1000 * 60 * 60);
+
+      if (link.clickFrequency) {
+        // 세 번째 클릭부터 이전 주기, 이전까지 클릭한 카운트, 새로운 시간차이, 새 카운트를 가지고 평균 클릭 주기를 계산한다.
+        link.clickFrequency = (link.clickFrequency * link.clickCount + hoursDifference) / newCount;
+      } else {
+        // 두 번째 클릭 시 - 이때부터 주기를 계산한다 ("클릭 주기"라는 개념은 일반적으로 두 개 이상의 클릭 이벤트가 있어야 의미가 있음)
+        // 두 번째 클릭이 발생한 시점에서 첫 번째 클릭과의 시간 차이를 구하고, 이를 기반으로 클릭 주기를 계산한다.
+        link.clickFrequency = hoursDifference;
+      }
+    }
+
+    link.clickCount = newCount;
+    link.lastClickedAt = now;
+
     return await this.linkRepository.save(link);
   }
 

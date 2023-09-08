@@ -39,6 +39,15 @@ export class Link {
   @Column({ default: false })
   isRead!: boolean;
 
+  @Column({ type: 'int', default: 0 })
+  clickCount!: number;
+
+  @Column({ type: 'float', nullable: true })
+  clickFrequency: number | null = null; // 클릭 주기(시간 단위, 소수점 첫째자리까지 허용)
+
+  @Column({ type: 'datetime', nullable: true })
+  lastClickedAt: Date | null = null;
+
   @Column({ type: 'datetime', nullable: true })
   readAt!: Date | null;
 
