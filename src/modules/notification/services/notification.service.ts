@@ -26,7 +26,7 @@ export class NotificationService {
    * @description 알림 발송
    */
   async sendNotification(): Promise<void> {
-    const users = await this.userRepository.findUsersWithUnreadLinksOverTen();
+    const users = await this.userRepository.findUsersWithUncheckedLinksOverTen();
 
     if (users.length === 0) {
       return;

@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  AfterLoad,
 } from 'typeorm';
 
 @Entity()
@@ -36,9 +37,6 @@ export class Link {
   @Column({ default: false })
   isInMyCollection!: boolean;
 
-  @Column({ default: false })
-  isRead!: boolean;
-
   @Column({ type: 'int', default: 0 })
   clickCount!: number;
 
@@ -47,9 +45,6 @@ export class Link {
 
   @Column({ type: 'datetime', nullable: true })
   lastClickedAt: Date | null = null;
-
-  @Column({ type: 'datetime', nullable: true })
-  readAt!: Date | null;
 
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;

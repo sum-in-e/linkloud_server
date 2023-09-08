@@ -43,7 +43,7 @@ export class LinkService {
     try {
       return await this.linkRepository.findLinksByParams(user, query);
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', { status: 500 });
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, JSON.stringify(error), { status: 500 });
     }
   }
 
