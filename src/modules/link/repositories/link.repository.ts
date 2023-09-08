@@ -53,15 +53,21 @@ export class LinkRepository {
   }
 
   async findLinksByParams(user: User, query: GetLinksDto): Promise<{ linkCount: number; links: Link[] }> {
-    const { sort, limit, offset, keyword, isRead, myCollection, kloudId } = query;
+    const { sort, limit, offset, keyword, isChecked, myCollection, kloudId } = query;
 
     let queryBuilder = this.linkRepository
       .createQueryBuilder('link')
       .leftJoinAndSelect('link.kloud', 'kloud')
       .where('link.user.id = :userId', { userId: user.id });
 
-    if (isRead !== undefined) {
-      queryBuilder = queryBuilder.andWhere('link.isRead = :isRead', { isRead });
+    if (isChecked !== undefined) {
+      queryBuilder = queryBuilder.andWhere(
+        'link.isInMyCollection = :isInMyCollection AND link.clickCount = :clickCount',
+        {
+          isInMyCollection: false,
+          clickCount: 0,
+        },
+      );
     }
 
     if (myCollection !== undefined) {
@@ -177,11 +183,12 @@ export class LinkRepository {
     });
   }
 
-  async countUnreadLinks(user: User): Promise<number> {
+  async countUncheckedLinks(user: User): Promise<number> {
     return await this.linkRepository.count({
       where: {
         user: { id: user.id },
-        isRead: false,
+        isInMyCollection: false,
+        clickCount: 0,
       },
     });
   }

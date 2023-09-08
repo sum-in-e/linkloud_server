@@ -9,7 +9,7 @@ import { User } from 'src/modules/user/entities/user.entity';
 interface getGroupsCountResponse {
   myCollection: number;
   all: number;
-  unread: number;
+  unchecked: number;
   uncategorized: number;
   klouds: Kloud[] | [];
 }
@@ -21,19 +21,19 @@ export class GroupsService {
     try {
       const myCollection = await this.linkRepository.countLinksInMyCollection(user);
       const all = await this.linkRepository.countAllLinks(user);
-      const unread = await this.linkRepository.countUnreadLinks(user);
+      const unchecked = await this.linkRepository.countUncheckedLinks(user);
       const uncategorized = await this.linkRepository.countUncategorizedLinks(user);
       const klouds = await this.kloudRepository.getKlouds(user);
 
       return {
         all,
         myCollection,
-        unread,
+        unchecked,
         uncategorized,
         klouds,
       };
     } catch (error) {
-      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, '조회 실패', {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, JSON.stringify(error), {
         status: 500,
       });
     }

@@ -69,7 +69,7 @@ export class UserRepository {
   /**
    * @description 정상 상태의 유저 중 미열람 링크가 10개 이상이고 구독 등록이 되어있는 유저를 찾습니다.
    */
-  async findUsersWithUnreadLinksOverTen(): Promise<User[]> {
+  async findUsersWithUncheckedLinksOverTen(): Promise<User[]> {
     return await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.subscriptions', 'subscription')
@@ -94,7 +94,9 @@ export class UserRepository {
       .andWhere('user.deletedAt IS NULL')
       .groupBy('user.id')
       .addGroupBy('subscription.id')
-      .having('COUNT(link.id) >= 10 AND SUM(CASE WHEN link.isRead = false THEN 1 ELSE 0 END) >= 10')
+      .having(
+        'COUNT(link.id) >= 10 AND SUM(CASE WHEN link.isInMyCollection = false AND link.clickCount = 0 THEN 1 ELSE 0 END) >= 10',
+      )
       .getMany();
   }
 }

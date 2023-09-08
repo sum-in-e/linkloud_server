@@ -109,10 +109,10 @@ export class GetLinksDto {
   @IsString()
   keyword?: string;
 
-  @ApiProperty({ description: '링크 열람 필터', required: false, example: 'true' })
+  @ApiProperty({ description: '링크 확인 여부 필터', required: false, example: 'true' })
   @IsOptional()
   @Transform(({ value }) => (value === 'true' ? true : false))
-  isRead?: boolean;
+  isChecked?: boolean;
 
   @ApiProperty({ description: '내 컬렉션 필터', required: false, example: 'true' })
   @IsOptional()
