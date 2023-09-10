@@ -43,7 +43,7 @@ export class LinkRepository {
   }
 
   /**
-   * @description 유저가 소유한 링크를 조회합니다.
+   * @description 유저가 소유한 링크들 전체를 조회합니다.
    */
   async findLinksByUser(user: User, queryRunner: QueryRunner): Promise<Link[] | []> {
     return await queryRunner.manager
@@ -52,8 +52,11 @@ export class LinkRepository {
       .getMany();
   }
 
+  /**
+   * @description 유저가 소유한 링크 파라미터에 따라 조회합니다.
+   */
   async findLinksByParams(user: User, query: GetLinksDto): Promise<{ linkCount: number; links: Link[] }> {
-    const { sort, limit, offset, keyword, isChecked, myCollection, kloudId } = query;
+    const { orderBy, sort, limit, offset, keyword, isChecked, myCollection, kloudId } = query;
 
     let queryBuilder = this.linkRepository
       .createQueryBuilder('link')
@@ -93,8 +96,15 @@ export class LinkRepository {
       );
     }
 
+    if (orderBy === 'random') {
+      queryBuilder = queryBuilder.orderBy('RAND()');
+    } else {
+      // 'createdAt' or undefined (default is 'createdAt')
+      queryBuilder = queryBuilder.orderBy('link.createdAt', sort);
+    }
+
     const linkCount = await queryBuilder.getCount(); // 별도의 쿼리 빌더를 생성하여 linkCount를 계산한다. links에 같이 count 까지 나오게하면 전체 count가 나오지 않음. (skip, take에 영향을 받기 때문)
-    const links = await queryBuilder.orderBy('link.createdAt', sort).skip(offset).take(limit).getMany();
+    const links = await queryBuilder.skip(offset).take(limit).getMany();
 
     return { linkCount, links };
   }

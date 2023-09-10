@@ -99,7 +99,24 @@ export class GetLinksDto {
   @Transform(({ value }) => Number(value))
   limit!: number;
 
-  @ApiProperty({ description: '생성일 기준 정렬 방식', required: false, default: 'DESC', example: 'ASC' })
+  @ApiProperty({
+    description: '정렬 기준',
+    required: false,
+    default: 'createdAt',
+    example: 'createdAt',
+    enum: ['createdAt', 'random'],
+  })
+  @IsIn(['createdAt', 'random'])
+  @IsOptional()
+  orderBy: 'createdAt' | 'random' = 'createdAt';
+
+  @ApiProperty({
+    description: '정렬 방식',
+    required: false,
+    default: 'DESC',
+    example: 'ASC',
+    enum: ['ASC', 'DESC'],
+  })
   @IsIn(['ASC', 'DESC'])
   @IsOptional()
   sort: 'DESC' | 'ASC' = 'DESC';
