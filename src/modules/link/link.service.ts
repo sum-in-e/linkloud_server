@@ -47,6 +47,23 @@ export class LinkService {
     }
   }
 
+  async getLinkListForManaging(user: User): Promise<{
+    uncheckedOverTwoWeeks: Link[];
+    recommendAddToCollection: Link[];
+  }> {
+    try {
+      const uncheckedOverTwoWeeks = await this.linkRepository.findUncheckedOverTwoWeeks(user);
+      const recommendAddToCollection = await this.linkRepository.findRecommendAddToCollection(user);
+
+      return {
+        uncheckedOverTwoWeeks,
+        recommendAddToCollection,
+      };
+    } catch (error) {
+      throw new CustomHttpException(ResponseCode.INTERNAL_SERVER_ERROR, JSON.stringify(error), { status: 500 });
+    }
+  }
+
   async getLinkDetail(id: number, user: User): Promise<Link> {
     let foundLink: Link | null;
 
