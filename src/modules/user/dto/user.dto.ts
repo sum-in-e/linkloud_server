@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class SignUpDto {
   @ApiProperty({
     description: '이메일',
-    example: 'example@linkloud.co.kr',
+    example: 'example@linkloud.xyz',
   })
   @IsEmail()
   email!: string;
