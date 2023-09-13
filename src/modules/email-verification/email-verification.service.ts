@@ -104,7 +104,7 @@ export class EmailVerificationService {
   private async sendEmail(email: string, verificationCode: string, apiKey: string): Promise<void> {
     sgMail.setApiKey(apiKey);
     const mailObj = {
-      from: 'linkloud_official@linkloud.co.kr', // 발신자 이메일(sendgrid에 등록한 주소만 사용 가능)
+      from: 'linkloud_official@linkloud.xyz', // 발신자 이메일(sendgrid에 등록한 주소만 사용 가능)
       to: email, // 수신자 이메일 -> 유저가 입력한 이메일
       subject: '링클라우드 서비스 이용을 위한 이메일 인증 번호 안내', // 제목
       html: '',

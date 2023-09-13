@@ -19,7 +19,7 @@ export class NotificationService {
     this.VAPID_PRIVATE_KEY = this.configService.getOrThrow('VAPID_PRIVATE_KEY');
 
     // web-push 라이브러리 초기화
-    webpush.setVapidDetails('https://linkloud.co.kr', this.VAPID_PUBLIC_KEY, this.VAPID_PRIVATE_KEY);
+    webpush.setVapidDetails('https://linkloud.xyz', this.VAPID_PUBLIC_KEY, this.VAPID_PRIVATE_KEY);
   }
 
   /**

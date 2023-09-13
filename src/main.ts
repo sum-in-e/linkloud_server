@@ -47,7 +47,7 @@ async function bootstrap() {
   // CORS 옵션 정의
   const corsOptions = {
     origin: [
-      'https://linkloud.co.kr',
+      'https://linkloud.xyz',
       'http://localhost:3000',
       'chrome-extension://ccmcdofnhlnnhjihdlhnclbnpmimilkc',
       'chrome-extension://hingnjljcgcfcijhbncnibknfmdahhdp',

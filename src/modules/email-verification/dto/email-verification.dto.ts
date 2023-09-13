@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class EmailVerificationDto {
   @ApiProperty({
     description: '인증할 이메일',
-    example: 'user@linkloud.co.kr',
+    example: 'user@linkloud.xyz',
   })
   @IsEmail()
   email!: string;
@@ -13,7 +13,7 @@ export class EmailVerificationDto {
 export class EmailVerificationConfirmDto {
   @ApiProperty({
     description: '인증할 이메일',
-    example: 'user@linkloud.co.kr',
+    example: 'user@linkloud.xyz',
   })
   @IsEmail()
   email!: string;
