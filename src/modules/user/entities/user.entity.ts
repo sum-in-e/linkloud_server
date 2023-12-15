@@ -33,12 +33,6 @@ export class User extends BaseEntity {
   @Column()
   method!: AuthMethodType;
 
-  @Column({ type: 'boolean', default: false })
-  isInactive!: boolean;
-
-  @Column({ type: 'datetime', nullable: true })
-  inactivedAt: Date | null = null;
-
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
