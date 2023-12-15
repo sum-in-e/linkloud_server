@@ -8,7 +8,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  AfterLoad,
 } from 'typeorm';
 
 @Entity()
@@ -35,7 +34,7 @@ export class Link {
   memo = '';
 
   @Column({ default: false })
-  isInMyCollection!: boolean;
+  isFollowing!: boolean;
 
   @Column({ type: 'int', default: 0 })
   clickCount!: number;
