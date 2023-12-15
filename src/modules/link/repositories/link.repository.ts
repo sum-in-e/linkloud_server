@@ -110,40 +110,6 @@ export class LinkRepository {
   }
 
   /**
-   * @description 조건: 현재 일자가 link.createdAt으로부터 14일 이상 경과 && link.isInMyCollection === false && link.click_count === 0인 링크들을 link.createdAt이 오래된 순으로 10개 조회
-   */
-  async findUncheckedOverTwoWeeks(user: User): Promise<Link[]> {
-    const twoWeeksAgo = new Date();
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
-    return await this.linkRepository
-      .createQueryBuilder('link')
-      .leftJoinAndSelect('link.kloud', 'kloud')
-      .where('link.user = :userId', { userId: user.id })
-      .andWhere('link.createdAt < :twoWeeksAgo', { twoWeeksAgo })
-      .andWhere('link.isInMyCollection = :isInMyCollection', { isInMyCollection: false })
-      .andWhere('link.clickCount = :clickCount', { clickCount: 0 })
-      .orderBy('link.createdAt', 'ASC')
-      .take(10)
-      .getMany();
-  }
-
-  /**
-   * @description 조건: link.click_count >= 1 && link.isInMyCollection === false인 링크들을 link.click_count가 많은 순으로 10개 조회
-   */
-  async findRecommendAddToCollection(user: User): Promise<Link[]> {
-    return await this.linkRepository
-      .createQueryBuilder('link')
-      .leftJoinAndSelect('link.kloud', 'kloud')
-      .where('link.user = :userId', { userId: user.id })
-      .andWhere('link.clickCount > :minClickCount', { minClickCount: 0 })
-      .andWhere('link.isInMyCollection = :isInMyCollection', { isInMyCollection: false })
-      .orderBy('link.clickCount', 'DESC')
-      .take(10)
-      .getMany();
-  }
-
-  /**
    * @description id에 해당하는 링크를 조회합니다.
    */
   async findLinkByIdAndUser(id: number, user: User): Promise<Link | null> {
