@@ -22,7 +22,7 @@ export class UpdateLinkPipe implements PipeTransform {
       if (error.property === 'title') {
         throw new CustomHttpException(ResponseCode.LINK_TITLE_IS_REQUIRED, '링크 제목은 필수입니다.');
       }
-      if (error.property === 'isInMyCollection') {
+      if (error.property === 'isFollowing') {
         throw new CustomHttpException(ResponseCode.INVALID_PARAMS);
       }
     });

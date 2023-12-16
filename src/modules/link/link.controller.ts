@@ -77,62 +77,7 @@ export class LinkController {
         title: link.title,
         description: link.description,
         memo: link.memo,
-        isInMyCollection: link.isInMyCollection,
-        isChecked: !(link.isInMyCollection === false && link.clickCount === 0),
-        clickCount: link.clickCount,
-        clickFrequency: link.clickFrequency,
-        lastClickedAt: link.lastClickedAt,
-        createdAt: link.createdAt,
-        kloud: link.kloud
-          ? {
-              id: link.kloud.id,
-              name: link.kloud.name,
-            }
-          : null,
-      })),
-    };
-  }
-
-  @ApiOperation({
-    summary: '링크 관리 매니저용 링크 리스트 조회',
-    description: '',
-  })
-  @Get('list/link-manager')
-  async getLinkListForManaging(@Req() request: RequestWithUser) {
-    const user = request.user;
-
-    const { uncheckedOverTwoWeeks, recommendAddToCollection } = await this.linkService.getLinkListForManaging(user);
-
-    return {
-      uncheckedOverTwoWeeks: uncheckedOverTwoWeeks.map((link) => ({
-        id: link.id,
-        url: link.url,
-        thumbnailUrl: link.thumbnailUrl,
-        title: link.title,
-        description: link.description,
-        memo: link.memo,
-        isInMyCollection: link.isInMyCollection,
-        isChecked: !(link.isInMyCollection === false && link.clickCount === 0),
-        clickCount: link.clickCount,
-        clickFrequency: link.clickFrequency,
-        lastClickedAt: link.lastClickedAt,
-        createdAt: link.createdAt,
-        kloud: link.kloud
-          ? {
-              id: link.kloud.id,
-              name: link.kloud.name,
-            }
-          : null,
-      })),
-      recommendAddToCollection: recommendAddToCollection.map((link) => ({
-        id: link.id,
-        url: link.url,
-        thumbnailUrl: link.thumbnailUrl,
-        title: link.title,
-        description: link.description,
-        memo: link.memo,
-        isInMyCollection: link.isInMyCollection,
-        isChecked: !(link.isInMyCollection === false && link.clickCount === 0),
+        isFollowing: link.isFollowing,
         clickCount: link.clickCount,
         clickFrequency: link.clickFrequency,
         lastClickedAt: link.lastClickedAt,
@@ -161,8 +106,6 @@ export class LinkController {
       title: link.title,
       description: link.description,
       memo: link.memo,
-      isInMyCollection: link.isInMyCollection,
-      isChecked: !(link.isInMyCollection === false && link.clickCount === 0),
       clickCount: link.clickCount,
       clickFrequency: link.clickFrequency,
       lastClickedAt: link.lastClickedAt,
@@ -237,8 +180,7 @@ export class LinkController {
       title: updatedLink.title,
       description: updatedLink.description,
       memo: updatedLink.memo,
-      isInMyCollection: updatedLink.isInMyCollection,
-      isChecked: !(updatedLink.isInMyCollection === false && updatedLink.clickCount === 0),
+      isFollowing: updatedLink.isFollowing,
       clickCount: updatedLink.clickCount,
       clickFrequency: updatedLink.clickFrequency,
       lastClickedAt: updatedLink.lastClickedAt,
