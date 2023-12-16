@@ -94,9 +94,7 @@ export class UserRepository {
       .andWhere('user.deletedAt IS NULL')
       .groupBy('user.id')
       .addGroupBy('subscription.id')
-      .having(
-        'COUNT(link.id) >= 10 AND SUM(CASE WHEN link.isInMyCollection = false AND link.clickCount = 0 THEN 1 ELSE 0 END) >= 10',
-      )
+      .having('COUNT(link.id) >= 10 AND link.clickCount = 0 THEN 1 ELSE 0 END) >= 10')
       .getMany();
   }
 }

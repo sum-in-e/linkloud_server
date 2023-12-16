@@ -87,12 +87,6 @@ export class KloudRepository {
     return this.kloudRepository
       .createQueryBuilder('kloud')
       .loadRelationCountAndMap('kloud.linkCount', 'kloud.links') // 클라우드에 연결된 링크의 개수를 로드하고, linkCount 속성에 매핑
-      .loadRelationCountAndMap('kloud.uncheckedLinkCount', 'kloud.links', 'uncheckedLink', (qb) =>
-        qb.where('uncheckedLink.isInMyCollection = :isInMyCollection AND uncheckedLink.clickCount = :clickCount', {
-          isInMyCollection: false,
-          clickCount: 0,
-        }),
-      ) // 클라우드에 연결된 링크 중 link.isInMyCollection이 false이고 link.clickCount가 0인 링크의 개수를 로드하고, uncheckedLinkCount 속성에 매핑
       .select(['kloud.id', 'kloud.name', 'kloud.position'])
       .where('kloud.user.id = :userId', { userId: user.id })
       .orderBy('kloud.position', 'DESC')

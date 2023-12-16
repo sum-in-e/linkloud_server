@@ -17,6 +17,7 @@ import { KloudModule } from 'src/modules/kloud/kloud.module';
 import { AuthService } from 'src/core/auth/auth.service';
 import { SentryProvider } from 'src/common/sentry/sentry.provider';
 import { EmailVerificationService } from 'src/modules/email-verification/email-verification.service';
+import { AuthModule } from 'src/core/auth/auth.module';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { EmailVerificationService } from 'src/modules/email-verification/email-v
     forwardRef(() => EmailVerificationModule),
     forwardRef(() => KloudModule),
     forwardRef(() => LinkModule),
-    forwardRef(() => UserModule),
+    forwardRef(() => AuthModule),
     HttpModule,
   ],
   controllers: [UserController],

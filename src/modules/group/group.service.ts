@@ -7,9 +7,8 @@ import { LinkRepository } from 'src/modules/link/repositories/link.repository';
 import { User } from 'src/modules/user/entities/user.entity';
 
 interface getGroupsCountResponse {
-  myCollection: number;
+  following: number;
   all: number;
-  unchecked: number;
   uncategorized: number;
   klouds: Kloud[] | [];
 }
@@ -19,16 +18,14 @@ export class GroupsService {
   constructor(private readonly linkRepository: LinkRepository, private readonly kloudRepository: KloudRepository) {}
   async getGroupsCountByUser(user: User): Promise<getGroupsCountResponse> {
     try {
-      const myCollection = await this.linkRepository.countLinksInMyCollection(user);
+      const following = await this.linkRepository.countFollowingLinks(user);
       const all = await this.linkRepository.countAllLinks(user);
-      const unchecked = await this.linkRepository.countUncheckedLinks(user);
       const uncategorized = await this.linkRepository.countUncategorizedLinks(user);
       const klouds = await this.kloudRepository.getKlouds(user);
 
       return {
         all,
-        myCollection,
-        unchecked,
+        following,
         uncategorized,
         klouds,
       };

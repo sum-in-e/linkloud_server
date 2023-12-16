@@ -1,6 +1,5 @@
 import {
   IsString,
-  IsUrl,
   IsNumber,
   MinLength,
   IsOptional,
@@ -32,6 +31,10 @@ export class CreateLinkDto {
   @IsString()
   description!: string;
 
+  @ApiProperty({ description: '링크의 구독 여부' })
+  @IsBoolean()
+  isFollowing!: boolean;
+
   @ApiProperty({ description: '클라우드 ID' })
   @IsNumber()
   @IsOptional()
@@ -58,7 +61,7 @@ export class UpdateLinkDto {
   @ApiProperty({ description: '내 컬렉션 저장 여부' })
   @IsBoolean()
   @IsOptional()
-  isInMyCollection!: boolean;
+  isFollowing!: boolean;
 
   @ApiProperty({ description: '클라우드 ID' })
   @IsInt()
@@ -131,10 +134,10 @@ export class GetLinksDto {
   @Transform(({ value }) => (value === 'true' ? true : false))
   isChecked?: boolean;
 
-  @ApiProperty({ description: '내 컬렉션 필터', required: false, example: 'true' })
+  @ApiProperty({ description: '구독 여부 필터', required: false, example: 'true' })
   @IsOptional()
   @Transform(({ value }) => (value === 'true' ? true : false))
-  myCollection?: boolean;
+  isFollowing?: boolean;
 
   @ApiProperty({
     description: '클라우드 필터 - 클라우드 미지정의 경우 0, 클라우드별로 찾고싶은 경우 클라우드 아이디',
