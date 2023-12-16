@@ -20,6 +20,7 @@ export class LinkRepository {
     link.thumbnailUrl = body.thumbnailUrl;
     link.title = body.title;
     link.description = body.description;
+    link.isFollowing = body.isFollowing;
     link.kloud = kloud;
     link.user = user;
 
@@ -56,7 +57,7 @@ export class LinkRepository {
    * @description 유저가 소유한 링크 파라미터에 따라 조회합니다.
    */
   async findLinksByParams(user: User, query: GetLinksDto): Promise<{ linkCount: number; links: Link[] }> {
-    const { orderBy, sort, limit, offset, keyword, isChecked, myCollection, kloudId } = query;
+    const { orderBy, sort, limit, offset, keyword, isChecked, isFollowing, kloudId } = query;
 
     let queryBuilder = this.linkRepository
       .createQueryBuilder('link')
@@ -64,18 +65,20 @@ export class LinkRepository {
       .where('link.user = :userId', { userId: user.id });
 
     if (isChecked !== undefined) {
-      queryBuilder = queryBuilder.andWhere(
-        'link.isInMyCollection = :isInMyCollection AND link.clickCount = :clickCount',
-        {
-          isInMyCollection: false,
+      if (isChecked) {
+        queryBuilder = queryBuilder.andWhere('link.clickCount > :minClickCount', {
+          minClickCount: 0,
+        });
+      } else {
+        queryBuilder = queryBuilder.andWhere('link.clickCount = :clickCount', {
           clickCount: 0,
-        },
-      );
+        });
+      }
     }
 
-    if (myCollection !== undefined) {
-      queryBuilder = queryBuilder.andWhere('link.isInMyCollection = :isInMyCollection', {
-        isInMyCollection: myCollection,
+    if (isFollowing !== undefined) {
+      queryBuilder = queryBuilder.andWhere('link.isFollowing = :isFollowing', {
+        isFollowing,
       });
     }
 
@@ -153,7 +156,7 @@ export class LinkRepository {
     if (body.title) link.title = body.title;
     if (body.description !== undefined) link.description = body.description; // 빈 문자열을 보낼 수 있기 때문에 falsy한 값으로만 식별하면 안 된다.
     if (body.memo !== undefined) link.memo = body.memo;
-    if (body.isInMyCollection !== undefined) link.isInMyCollection = body.isInMyCollection;
+    if (body.isFollowing !== undefined) link.isFollowing = body.isFollowing;
     if (body.kloudId !== undefined) link.kloud = kloud;
 
     return await this.linkRepository.save(link);
@@ -182,11 +185,11 @@ export class LinkRepository {
     return await queryRunner.manager.remove(links);
   }
 
-  async countLinksInMyCollection(user: User): Promise<number> {
+  async countFollowingLinks(user: User): Promise<number> {
     return await this.linkRepository.count({
       where: {
         user: { id: user.id },
-        isInMyCollection: true,
+        isFollowing: true,
       },
     });
   }
@@ -203,7 +206,6 @@ export class LinkRepository {
     return await this.linkRepository.count({
       where: {
         user: { id: user.id },
-        isInMyCollection: false,
         clickCount: 0,
       },
     });
