@@ -4,7 +4,6 @@
 
 ![링클라우드 랜딩페이지 이미지](./public/images/landing_page.webp)
 
-> Explore https://linkloud.xyz
 #
 
 #### 사람들이 링크를 저장하며 겪는 문제를 정의하고 이를 해결하기 위한 기능을 기획 및 개발
